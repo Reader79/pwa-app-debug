@@ -330,63 +330,75 @@ document.addEventListener('DOMContentLoaded', () => {
       machineGroups[entry.machine].push(entry);
     });
     
-    // Создание таблиц для каждого станка
+    // Создание карточек для каждого станка
     Object.keys(machineGroups).forEach(machine => {
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'machine-group';
+      const machineCard = document.createElement('div');
+      machineCard.className = 'machine-card';
       
-      const title = document.createElement('h4');
-      title.className = 'machine-title';
-      title.textContent = `Станок: ${machine}`;
-      groupDiv.appendChild(title);
+      // Заголовок станка
+      const machineHeader = document.createElement('div');
+      machineHeader.className = 'machine-header';
+      machineHeader.textContent = machine.toUpperCase();
+      machineCard.appendChild(machineHeader);
       
-      const table = document.createElement('table');
-      table.className = 'results-table';
-      
-      // Заголовок таблицы
-      const thead = document.createElement('thead');
-      thead.innerHTML = `
-        <tr>
-          <th>Деталь</th>
-          <th>Операция</th>
-          <th>Машинное время (мин)</th>
-          <th>Доп. время (мин)</th>
-          <th>Количество</th>
-          <th>Общее время (мин)</th>
-          <th>Коэффициент</th>
-          <th>Действия</th>
-        </tr>
-      `;
-      table.appendChild(thead);
-      
-      // Тело таблицы
-      const tbody = document.createElement('tbody');
-      let machineTotalTime = 0;
+      // Контейнер для операций
+      const operationsContainer = document.createElement('div');
+      operationsContainer.className = 'operations-container';
       
       machineGroups[machine].forEach((entry, entryIndex) => {
-        const coefficient = calculateCoefficient(entry.totalTime, state.main.baseTime);
-        machineTotalTime += entry.totalTime;
+        const operationCard = document.createElement('div');
+        operationCard.className = 'operation-card';
         
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${entry.part}</td>
-          <td>${entry.operation}</td>
-          <td>${entry.machineTime}</td>
-          <td>${entry.extraTime}</td>
-          <td>${entry.quantity}</td>
-          <td class="total-time">${entry.totalTime}</td>
-          <td class="coefficient">${coefficient}</td>
-          <td>
-            <button class="secondary" onclick="editEntry('${date}', ${entryIndex})" style="margin-right: 4px; padding: 4px 8px; font-size: 0.8rem;">✏️</button>
-            <button class="secondary" onclick="deleteEntry('${date}', ${entryIndex})" style="padding: 4px 8px; font-size: 0.8rem; background: #dc2626;">🗑️</button>
-          </td>
+        // Заголовок операции
+        const operationHeader = document.createElement('div');
+        operationHeader.className = 'operation-header';
+        operationHeader.textContent = `${entry.part} - ${entry.operation}`;
+        operationCard.appendChild(operationHeader);
+        
+        // Данные операции
+        const operationData = document.createElement('div');
+        operationData.className = 'operation-data';
+        
+        const coefficient = calculateCoefficient(entry.totalTime, state.main.baseTime);
+        
+        operationData.innerHTML = `
+          <div class="data-row">
+            <span class="data-label">Машинное время:</span>
+            <span class="data-value">${entry.machineTime} мин</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Дополнительное:</span>
+            <span class="data-value">${entry.extraTime} мин</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Количество:</span>
+            <span class="data-value">${entry.quantity}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Общее время:</span>
+            <span class="data-value">${entry.totalTime} мин</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Коэффициент:</span>
+            <span class="data-value">${coefficient.toFixed(3)}</span>
+          </div>
         `;
-        tbody.appendChild(row);
+        
+        // Кнопки действий
+        const actionButtons = document.createElement('div');
+        actionButtons.className = 'action-buttons';
+        actionButtons.innerHTML = `
+          <button class="edit-btn" onclick="editEntry('${date}', ${entryIndex})" title="Редактировать">✏️</button>
+          <button class="delete-btn" onclick="deleteEntry('${date}', ${entryIndex})" title="Удалить">🗑️</button>
+        `;
+        
+        operationCard.appendChild(operationData);
+        operationCard.appendChild(actionButtons);
+        operationsContainer.appendChild(operationCard);
       });
       
-      table.appendChild(tbody);
-      groupDiv.appendChild(table);
-      resultsContainer.appendChild(groupDiv);
+      machineCard.appendChild(operationsContainer);
+      resultsContainer.appendChild(machineCard);
     });
     
     // Итоговая таблица

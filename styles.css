@@ -362,7 +362,125 @@ button.secondary:hover{
 .badge.off{background:#334155;color:#cbd5e1}
 .hidden{display:none}
 
-/* Стили для таблиц результатов */
+/* Стили для карточек станков */
+.machine-card {
+  background: var(--card);
+  border-radius: var(--border-radius);
+  margin: 16px 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.machine-header {
+  background: linear-gradient(135deg, #ff8c00, #e67e00);
+  color: white;
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+  border-bottom: 2px solid rgba(255, 140, 0, 0.3);
+}
+
+.operations-container {
+  padding: 20px;
+  background: var(--background);
+}
+
+.operation-card {
+  background: var(--card-elevated);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  position: relative;
+}
+
+.operation-card:last-child {
+  margin-bottom: 0;
+}
+
+.operation-header {
+  color: #ff8c00;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.operation-data {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.data-value {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.action-buttons {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+}
+
+.edit-btn:hover {
+  background: #e67e00;
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* Стили для таблиц результатов (старые, оставляем для совместимости) */
 .results-table {
   width: 100%;
   border-collapse: collapse;
@@ -419,6 +537,50 @@ button.secondary:hover{
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
+  .machine-header {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  
+  .operations-container {
+    padding: 16px;
+  }
+  
+  .operation-card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .operation-header {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .data-row {
+    padding: 3px 0;
+  }
+  
+  .data-label {
+    font-size: 13px;
+  }
+  
+  .data-value {
+    font-size: 13px;
+  }
+  
+  .action-buttons {
+    top: 12px;
+    right: 12px;
+    gap: 6px;
+  }
+  
+  .edit-btn, .delete-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 28px;
+    height: 24px;
+  }
+  
   .results-table {
     font-size: 0.6rem;
     width: 100%;
