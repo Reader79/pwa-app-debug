@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function openOperationsDialog(partIndex){
     currentPartIndex = partIndex;
     const part = state.parts[partIndex];
-    document.getElementById('operationsTitle').textContent = `Операции: ${part.name}`;
+    document.getElementById('operationsTitle').textContent = `Редактирование: ${part.name}`;
     operationsDialog.showModal();
     renderOperations();
   }
@@ -123,6 +123,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentPartIndex === -1) return;
     operationsContainer.innerHTML = '';
     const part = state.parts[currentPartIndex];
+    
+    // Поле для редактирования названия детали
+    const nameRow = document.createElement('div'); nameRow.className='op-row';
+    const nameWrap = document.createElement('div'); nameWrap.className='field-inline';
+    const nameLabel = document.createElement('label'); nameLabel.textContent='Название детали';
+    const nameInput = document.createElement('input'); 
+    nameInput.type='text'; 
+    nameInput.placeholder='Название детали'; 
+    nameInput.value = part.name;
+    nameInput.style.fontWeight = 'bold';
+    nameInput.style.fontSize = '16px';
+    nameWrap.appendChild(nameLabel); nameWrap.appendChild(nameInput);
+    nameInput.addEventListener('input', () => { 
+      part.name = nameInput.value; 
+      saveState(); 
+      // Обновляем заголовок диалога
+      document.getElementById('operationsTitle').textContent = `Редактирование: ${part.name}`;
+      // Обновляем список деталей
+      renderParts();
+    });
+    nameRow.appendChild(nameWrap);
+    operationsContainer.appendChild(nameRow);
+    
+    // Разделитель
+    const separator = document.createElement('div'); 
+    separator.style.height = '1px'; 
+    separator.style.backgroundColor = '#1f2937'; 
+    separator.style.margin = '16px 0';
+    operationsContainer.appendChild(separator);
     
     part.operations.forEach((op, oIndex) => {
       const row = document.createElement('div'); row.className='op-row';
