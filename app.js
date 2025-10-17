@@ -363,7 +363,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const operationsContainer = document.createElement('div');
       operationsContainer.className = 'operations-container';
       
-      machineGroups[machine].forEach((entry, entryIndex) => {
+      machineGroups[machine].forEach((entry, localIndex) => {
+        // Находим глобальный индекс записи в общем массиве
+        const globalIndex = record.entries.findIndex(e => 
+          e.machine === entry.machine && 
+          e.part === entry.part && 
+          e.operation === entry.operation &&
+          e.machineTime === entry.machineTime &&
+          e.extraTime === entry.extraTime &&
+          e.quantity === entry.quantity
+        );
         const operationCard = document.createElement('div');
         operationCard.className = 'operation-card';
         
@@ -425,8 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionButtons = document.createElement('div');
         actionButtons.className = 'action-buttons';
         actionButtons.innerHTML = `
-          <button class="edit-btn" onclick="editEntry('${date}', ${entryIndex})" title="Редактировать">✏️</button>
-          <button class="delete-btn" onclick="deleteEntry('${date}', ${entryIndex})" title="Удалить">🗑️</button>
+          <button class="edit-btn" onclick="editEntry('${date}', ${globalIndex})" title="Редактировать">✏️</button>
+          <button class="delete-btn" onclick="deleteEntry('${date}', ${globalIndex})" title="Удалить">🗑️</button>
         `;
         
         operationCard.appendChild(operationData);
