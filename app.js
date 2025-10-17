@@ -178,27 +178,66 @@ document.addEventListener('DOMContentLoaded', () => {
     
     part.operations.forEach((op, oIndex) => {
       const row = document.createElement('div'); row.className='op-row';
-      const opNameWrap = document.createElement('div'); opNameWrap.className='field-inline';
-      const opNameLabel = document.createElement('label'); opNameLabel.textContent='Операция';
-      const opName = document.createElement('input'); opName.type='text'; opName.placeholder='Операция'; opName.value = op.name;
-      opNameWrap.appendChild(opNameLabel); opNameWrap.appendChild(opName);
+      // Операция
+      const opNameWrap = document.createElement('div');
+      const opNameLabel = document.createElement('label'); 
+      opNameLabel.textContent='Операция'; 
+      opNameLabel.style.marginBottom = '4px'; 
+      opNameLabel.style.display = 'block';
+      opNameLabel.style.fontSize = '14px';
+      opNameLabel.style.color = 'var(--muted)';
+      opNameLabel.style.fontWeight = '500';
+      const opName = document.createElement('input'); 
+      opName.type='text'; 
+      opName.placeholder='Операция'; 
+      opName.value = op.name;
+      opNameWrap.appendChild(opNameLabel); 
+      opNameWrap.appendChild(opName);
       opName.addEventListener('input', () => { op.name = opName.value; saveState(); });
       
-      const machineTimeWrap = document.createElement('div'); machineTimeWrap.className='field-inline';
-      const machineTimeLabel = document.createElement('label'); machineTimeLabel.textContent='Машинное время (мин)';
-      const machineTime = document.createElement('input'); machineTime.type='number'; machineTime.placeholder='Машинное время (мин)'; machineTime.value = String(op.machineTime||0);
-      machineTimeWrap.appendChild(machineTimeLabel); machineTimeWrap.appendChild(machineTime);
+      // Машинное время
+      const machineTimeWrap = document.createElement('div');
+      const machineTimeLabel = document.createElement('label'); 
+      machineTimeLabel.textContent='Машинное время (мин)'; 
+      machineTimeLabel.style.marginBottom = '4px'; 
+      machineTimeLabel.style.display = 'block';
+      machineTimeLabel.style.fontSize = '14px';
+      machineTimeLabel.style.color = 'var(--muted)';
+      machineTimeLabel.style.fontWeight = '500';
+      const machineTime = document.createElement('input'); 
+      machineTime.type='number'; 
+      machineTime.placeholder='Машинное время (мин)'; 
+      machineTime.value = String(op.machineTime||0);
+      machineTimeWrap.appendChild(machineTimeLabel); 
+      machineTimeWrap.appendChild(machineTime);
       machineTime.addEventListener('input', () => { op.machineTime = Number(machineTime.value||0); saveState(); });
       
-      const extraTimeWrap = document.createElement('div'); extraTimeWrap.className='field-inline';
-      const extraTimeLabel = document.createElement('label'); extraTimeLabel.textContent='Доп. время (мин)';
-      const extraTime = document.createElement('input'); extraTime.type='number'; extraTime.placeholder='Доп. время (мин)'; extraTime.value = String(op.extraTime||0);
-      extraTimeWrap.appendChild(extraTimeLabel); extraTimeWrap.appendChild(extraTime);
+      // Дополнительное время
+      const extraTimeWrap = document.createElement('div');
+      const extraTimeLabel = document.createElement('label'); 
+      extraTimeLabel.textContent='Доп. время (мин)'; 
+      extraTimeLabel.style.marginBottom = '4px'; 
+      extraTimeLabel.style.display = 'block';
+      extraTimeLabel.style.fontSize = '14px';
+      extraTimeLabel.style.color = 'var(--muted)';
+      extraTimeLabel.style.fontWeight = '500';
+      const extraTime = document.createElement('input'); 
+      extraTime.type='number'; 
+      extraTime.placeholder='Доп. время (мин)'; 
+      extraTime.value = String(op.extraTime||0);
+      extraTimeWrap.appendChild(extraTimeLabel); 
+      extraTimeWrap.appendChild(extraTime);
       extraTime.addEventListener('input', () => { op.extraTime = Number(extraTime.value||0); saveState(); });
       
       // Ячейка с суммой
-      const totalWrap = document.createElement('div'); totalWrap.className='field-inline';
-      const totalLabel = document.createElement('label'); totalLabel.textContent='Итого (мин)';
+      const totalWrap = document.createElement('div');
+      const totalLabel = document.createElement('label'); 
+      totalLabel.textContent='Итого (мин)'; 
+      totalLabel.style.marginBottom = '4px'; 
+      totalLabel.style.display = 'block';
+      totalLabel.style.fontSize = '14px';
+      totalLabel.style.color = 'var(--muted)';
+      totalLabel.style.fontWeight = '500';
       const totalDisplay = document.createElement('div'); 
       totalDisplay.style.padding = '12px';
       totalDisplay.style.background = 'var(--card)';
@@ -207,7 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
       totalDisplay.style.fontWeight = '600';
       totalDisplay.style.color = 'var(--primary)';
       totalDisplay.style.textAlign = 'center';
-      totalWrap.appendChild(totalLabel); totalWrap.appendChild(totalDisplay);
+      totalDisplay.style.height = '44px';
+      totalDisplay.style.display = 'flex';
+      totalDisplay.style.alignItems = 'center';
+      totalDisplay.style.justifyContent = 'center';
+      totalWrap.appendChild(totalLabel); 
+      totalWrap.appendChild(totalDisplay);
       
       // Функция обновления суммы
       const updateTotal = () => {

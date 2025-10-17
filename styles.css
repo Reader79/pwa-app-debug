@@ -321,7 +321,7 @@ button.secondary:hover{
   display:grid;
   grid-template-columns:1.5fr 1fr 1fr 1fr auto;
   gap:12px;
-  align-items:center;
+  align-items:end;
   max-width:100%;
   padding:16px;
   background:var(--card-elevated);
