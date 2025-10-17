@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsDialog = document.getElementById('settingsDialog');
   const closeSettings = document.getElementById('closeSettings');
   const settingsForm = settingsDialog?.querySelector('form');
+  
+  // Элементы экспорта/импорта
+  const exportData = document.getElementById('exportData');
+  const selectFile = document.getElementById('selectFile');
+  const importFile = document.getElementById('importFile');
+  const importData = document.getElementById('importData');
+  const importStatus = document.getElementById('importStatus');
 
   const actionOne = document.getElementById('actionOne');
   const actionTwo = document.getElementById('actionTwo');
@@ -807,6 +814,122 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   actionThree?.addEventListener('click', () => {
     console.log('Действие 3: заглушка');
+  });
+
+  // Функции экспорта/импорта данных
+  function exportAppData() {
+    try {
+      const exportData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        data: {
+          main: state.main,
+          machines: state.machines,
+          parts: state.parts,
+          records: state.records
+        }
+      };
+      
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `pwa-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      console.log('Данные экспортированы успешно');
+    } catch (error) {
+      console.error('Ошибка экспорта:', error);
+    }
+  }
+
+  function importAppData(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importData = JSON.parse(e.target.result);
+          
+          // Проверяем структуру файла
+          if (!importData.data || !importData.version) {
+            throw new Error('Неверный формат файла');
+          }
+          
+          // Импортируем данные
+          state.main = importData.data.main || defaultState.main;
+          state.machines = importData.data.machines || defaultState.machines;
+          state.parts = importData.data.parts || defaultState.parts;
+          state.records = importData.data.records || defaultState.records;
+          
+          // Сохраняем в localStorage
+          localStorage.setItem('pwa-state', JSON.stringify(state));
+          
+          // Обновляем UI
+          hydrateMain();
+          renderMachines();
+          renderParts();
+          
+          resolve('Данные успешно импортированы');
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+      reader.readAsText(file);
+    });
+  }
+
+  function showImportStatus(message, type = 'info') {
+    importStatus.textContent = message;
+    importStatus.className = `import-status ${type}`;
+    importStatus.style.display = 'block';
+    
+    setTimeout(() => {
+      importStatus.style.display = 'none';
+    }, 5000);
+  }
+
+  // Обработчики событий для экспорта/импорта
+  exportData?.addEventListener('click', exportAppData);
+  
+  selectFile?.addEventListener('click', () => {
+    importFile.click();
+  });
+  
+  importFile?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      importData.disabled = false;
+      importData.textContent = `Импортировать (${file.name})`;
+    }
+  });
+  
+  importData?.addEventListener('click', async () => {
+    const file = importFile.files[0];
+    if (!file) return;
+    
+    try {
+      importData.disabled = true;
+      importData.textContent = 'Импорт...';
+      
+      const result = await importAppData(file);
+      showImportStatus(result, 'success');
+      
+      // Сбрасываем форму
+      importFile.value = '';
+      importData.disabled = true;
+      importData.textContent = 'Импортировать';
+      
+    } catch (error) {
+      showImportStatus(`Ошибка импорта: ${error.message}`, 'error');
+      importData.disabled = false;
+      importData.textContent = 'Импортировать';
+    }
   });
 
 

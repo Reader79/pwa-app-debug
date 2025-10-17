@@ -92,6 +92,11 @@
           <button class="tab active" type="button" role="tab" aria-selected="true" id="tab-main" data-tab="main">Основное</button>
           <button class="tab" type="button" role="tab" aria-selected="false" id="tab-machines" data-tab="machines">Станки</button>
           <button class="tab" type="button" role="tab" aria-selected="false" id="tab-parts" data-tab="parts">Детали</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" id="tab-export" data-tab="export" title="Экспорт/Импорт данных">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+          </button>
         </nav>
 
         <section class="settings-body">
@@ -129,6 +134,25 @@
               <button class="primary" id="addPart" type="button">Добавить</button>
             </div>
             <div id="partsContainer" class="parts"></div>
+          </div>
+
+          <div class="tab-panel hidden" id="panel-export" data-panel="export">
+            <div class="export-section">
+              <h3>Экспорт данных</h3>
+              <p>Скачайте файл с настройками для переноса на другое устройство</p>
+              <button class="primary" id="exportData" type="button">📥 Скачать данные</button>
+            </div>
+            
+            <div class="import-section">
+              <h3>Импорт данных</h3>
+              <p>Загрузите файл с настройками для восстановления данных</p>
+              <div class="file-input-wrapper">
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+                <button class="secondary" id="selectFile" type="button">📤 Выбрать файл</button>
+                <button class="primary" id="importData" type="button" disabled>Импортировать</button>
+              </div>
+              <div id="importStatus" class="import-status"></div>
+            </div>
           </div>
         </section>
         <footer class="settings-footer">
