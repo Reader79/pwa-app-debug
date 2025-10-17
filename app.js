@@ -104,16 +104,28 @@ document.addEventListener('DOMContentLoaded', () => {
     addRecordDialog.showModal();
     currentRecord = null;
     
-    // Очищаем список записей только если это не режим редактирования
-    if (!isEditMode) {
-      currentEntries = [];
-      hideEntriesList();
-    }
-    
     if (date) {
       recordDate.value = date;
     } else {
       recordDate.value = new Date().toISOString().split('T')[0];
+    }
+    
+    // В режиме редактирования скрываем список записей
+    if (isEditMode) {
+      hideEntriesList();
+      // Скрываем кнопки добавления в смену
+      const addToShiftBtn = document.getElementById('addToShiftBtn');
+      const saveShiftBtn = document.getElementById('saveShiftBtn');
+      if (addToShiftBtn) addToShiftBtn.style.display = 'none';
+      if (saveShiftBtn) saveShiftBtn.style.display = 'none';
+    } else {
+      // В обычном режиме показываем кнопки
+      currentEntries = [];
+      hideEntriesList();
+      const addToShiftBtn = document.getElementById('addToShiftBtn');
+      const saveShiftBtn = document.getElementById('saveShiftBtn');
+      if (addToShiftBtn) addToShiftBtn.style.display = 'block';
+      if (saveShiftBtn) saveShiftBtn.style.display = 'block';
     }
     
     // Обновляем опции, но в режиме редактирования сохраняем выбранные значения
@@ -1159,11 +1171,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   saveRecord?.addEventListener('click', () => {
-    if (currentEntries.length === 0) {
-      alert('Добавьте хотя бы одну запись');
-      return;
-    }
-    
     const date = recordDate.value;
     const shiftType = getShiftType(new Date(date));
     
@@ -1172,27 +1179,42 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    const recordId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36));
-    
-    const record = {
-      id: recordId,
-      date: date,
-      shiftType: shiftType,
-      entries: [...currentEntries]
-    };
-    
     // Проверяем режим редактирования
     if (editingEntryIndex !== null) {
       // Режим редактирования - заменяем существующую запись
       const record = state.records.find(r => r.date === date);
       if (record && record.entries[editingEntryIndex]) {
+        // Создаем новую запись из текущих полей
+        const newEntry = {
+          machine: recordMachine.value,
+          part: recordPart.value,
+          operation: recordOperation.value,
+          machineTime: parseInt(recordMachineTime.value) || 0,
+          extraTime: parseInt(recordExtraTime.value) || 0,
+          quantity: parseInt(recordQuantity.value) || 0
+        };
+        
         // Заменяем запись на новую
-        record.entries[editingEntryIndex] = currentEntries[0];
+        record.entries[editingEntryIndex] = newEntry;
         console.log('Запись отредактирована:', record.entries[editingEntryIndex]);
       }
       editingEntryIndex = null; // Сбрасываем режим редактирования
     } else {
       // Обычный режим добавления
+      if (currentEntries.length === 0) {
+        alert('Добавьте хотя бы одну запись');
+        return;
+      }
+      
+      const recordId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36));
+      
+      const record = {
+        id: recordId,
+        date: date,
+        shiftType: shiftType,
+        entries: [...currentEntries]
+      };
+      
       // Проверяем, есть ли уже запись на эту дату
       const existingRecordIndex = state.records.findIndex(r => r.date === date);
       
@@ -1210,6 +1232,11 @@ document.addEventListener('DOMContentLoaded', () => {
     saveState();
     alert('Запись сохранена');
     addRecordDialog.close();
+    
+    // Обновляем отображение результатов
+    if (selectedDate) {
+      showResults(selectedDate);
+    }
   });
 
   // Init
