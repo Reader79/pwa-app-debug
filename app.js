@@ -809,8 +809,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Добавляем индикатор статуса данных (только для рабочих дней и прошедших дат)
-      const today = new Date();
-      const isPastDate = date < today;
+      const currentDate = new Date();
+      const isPastDate = date < currentDate;
       const isWorkDay = type === 'D' || type === 'N';
       
       if (isPastDate && isWorkDay) {
