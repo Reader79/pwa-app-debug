@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentRecord = null;
   let currentEntries = [];
   let selectedDate = null;
+  let editingEntryIndex = null; // Индекс редактируемой записи
 
   function loadState(){
     try {
@@ -227,6 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const entry = record.entries[entryIndex];
     
+    // Устанавливаем режим редактирования
+    editingEntryIndex = entryIndex;
+    selectedDate = date;
+    
     // Открываем диалог добавления записи с заполненными данными
     openAddRecordDialog(date);
     
@@ -254,10 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
       updateOperationOptions();
       updateTotalTime();
     }, 100);
-    
-    // Удаляем старую запись
-    record.entries.splice(entryIndex, 1);
-    saveState();
   };
   
   window.deleteEntry = function(date, entryIndex) {
@@ -1158,20 +1159,33 @@ document.addEventListener('DOMContentLoaded', () => {
       entries: [...currentEntries]
     };
     
-    // Проверяем, есть ли уже запись на эту дату
-    const existingRecordIndex = state.records.findIndex(r => r.date === date);
-    
-    if (existingRecordIndex !== -1) {
-      // Если запись уже существует, добавляем новые записи к существующим
-      state.records[existingRecordIndex].entries.push(...currentEntries);
-      console.log('Добавлены записи к существующей смене:', state.records[existingRecordIndex]);
+    // Проверяем режим редактирования
+    if (editingEntryIndex !== null) {
+      // Режим редактирования - заменяем существующую запись
+      const record = state.records.find(r => r.date === date);
+      if (record && record.entries[editingEntryIndex]) {
+        // Заменяем запись на новую
+        record.entries[editingEntryIndex] = currentEntries[0];
+        console.log('Запись отредактирована:', record.entries[editingEntryIndex]);
+      }
+      editingEntryIndex = null; // Сбрасываем режим редактирования
     } else {
-      // Если записи нет, добавляем новую запись
-      state.records.push(record);
-      console.log('Создана новая запись:', record);
+      // Обычный режим добавления
+      // Проверяем, есть ли уже запись на эту дату
+      const existingRecordIndex = state.records.findIndex(r => r.date === date);
+      
+      if (existingRecordIndex !== -1) {
+        // Если запись уже существует, добавляем новые записи к существующим
+        state.records[existingRecordIndex].entries.push(...currentEntries);
+        console.log('Добавлены записи к существующей смене:', state.records[existingRecordIndex]);
+      } else {
+        // Если записи нет, добавляем новую запись
+        state.records.push(record);
+        console.log('Создана новая запись:', record);
+      }
     }
-    saveState();
     
+    saveState();
     alert('Запись сохранена');
     addRecordDialog.close();
   });
