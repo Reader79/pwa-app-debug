@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 const PRECACHE = `precache-${CACHE_VERSION}`;
 
@@ -29,6 +29,11 @@ self.addEventListener('activate', (event) => {
         if (![PRECACHE, RUNTIME_CACHE].includes(key)) return caches.delete(key);
       }));
       await self.clients.claim();
+      // Принудительно обновляем все клиенты
+      const clients = await self.clients.matchAll();
+      clients.forEach(client => {
+        client.postMessage({ type: 'SW_UPDATED' });
+      });
     })()
   );
 });

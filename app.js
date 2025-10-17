@@ -408,9 +408,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Register Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch((err) => {
+      navigator.serviceWorker.register('./sw.js').then((registration) => {
+        console.log('SW registered successfully');
+        
+        // Проверяем обновления при загрузке
+        registration.addEventListener('updatefound', () => {
+          console.log('New SW version found, updating...');
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'activated') {
+              console.log('New SW activated, reloading...');
+              location.reload();
+            }
+          });
+        });
+      }).catch((err) => {
         console.warn('SW registration failed', err);
       });
+    });
+    
+    // Слушаем сообщения от Service Worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'SW_UPDATED') {
+        console.log('Service Worker updated, reloading page...');
+        location.reload();
+      }
     });
   }
 
