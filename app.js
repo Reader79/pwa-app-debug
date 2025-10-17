@@ -808,6 +808,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const corner = document.createElement('div'); corner.className='holiday-corner'; cell.appendChild(corner);
       }
       
+      // Добавляем индикатор статуса данных (только для рабочих дней и прошедших дат)
+      const today = new Date();
+      const isPastDate = date < today;
+      const isWorkDay = type === 'D' || type === 'N';
+      
+      if (isPastDate && isWorkDay) {
+        const dateString = formatDate(date);
+        const hasData = state.records.some(record => record.date === dateString && record.entries.length > 0);
+        
+        const statusIndicator = document.createElement('div');
+        statusIndicator.className = `status-indicator ${hasData ? 'has-data' : 'no-data'}`;
+        statusIndicator.innerHTML = hasData ? '✓' : '✗';
+        cell.style.position = 'relative';
+        cell.appendChild(statusIndicator);
+      }
+      
       // Добавляем обработчик клика для выбора даты
       cell.addEventListener('click', () => {
         // Исправляем проблему с часовыми поясами
