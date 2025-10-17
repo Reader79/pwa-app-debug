@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
   // Функции для работы с записями
-  function getShiftType(date, shiftNumber) {
+  function getShiftTypeForRecord(date, shiftNumber) {
     // Логика определения типа смены по дате и номеру смены
     // 16-дневный цикл: [D,D,O,O,D,D,O,O,N,N,O,O,N,N,O,O]
     const anchorDate = new Date('2025-10-11'); // Якорная дата
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateShiftType() {
     const date = recordDate.value;
     const shiftNumber = state.main.shiftNumber;
-    const shiftType = getShiftType(date, shiftNumber);
+    const shiftType = getShiftTypeForRecord(date, shiftNumber);
     
     let displayText = '';
     switch(shiftType) {
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong>${entry.machine}</strong> - ${entry.part} - ${entry.operation}<br>
           <small>Время: ${entry.machineTime}+${entry.extraTime} мин × ${entry.quantity} = ${entry.totalTime} мин</small>
         </div>
-        <button type="button" class="icon-only" onclick="removeEntry(${index})" title="Удалить">
+        <button type="button" class="icon-only" onclick="window.removeEntry(${index})" title="Удалить">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path fill="currentColor" d="M9 3a1 1 0 0 0-1 1v1H5v2h14V5h-3V4a1 1 0 0 0-1-1H9Zm-3 6h12l-1 9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2l-1-9Zm4 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/>
           </svg>
@@ -201,6 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
       hideEntriesList();
     }
   }
+  
+  // Делаем функцию глобальной
+  window.removeEntry = removeEntry;
 
   // Функции для отображения результатов
   function showResults(date) {
@@ -217,7 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     const shiftTypeText = record.shiftType === 'D' ? 'Дневная смена' : 
-                         record.shiftType === 'N' ? 'Ночная смена' : 'Выходной день';
+                         record.shiftType === 'N' ? 'Ночная смена' : 
+                         record.shiftType === 'O' ? 'Выходной день' : 'Неизвестно';
     
     resultsTitle.textContent = `Результаты работы - ${formatDate(date)}, ${shiftTypeText}`;
     resultsContainer.innerHTML = '';
@@ -861,7 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     const date = recordDate.value;
-    const shiftType = getShiftType(date, state.main.shiftNumber);
+    const shiftType = getShiftTypeForRecord(date, state.main.shiftNumber);
     
     if (shiftType === 'O') {
       alert('Нельзя добавлять записи в выходной день');
