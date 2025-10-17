@@ -96,6 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function calculateCoefficient(totalTime, baseTime) {
+    if (!baseTime || baseTime === 0) {
+      return 0; // Возвращаем 0 если базовое время не задано или равно 0
+    }
     return Math.round((totalTime / baseTime) * 100) / 100;
   }
 
@@ -380,7 +383,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const operationData = document.createElement('div');
         operationData.className = 'operation-data';
         
-        const coefficient = calculateCoefficient(entry.totalTime, state.main.baseTime);
+        const entryTotalTime = entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        const baseTime = state.main.baseTime || 600; // Значение по умолчанию
+        const coefficient = calculateCoefficient(entryTotalTime, baseTime);
         
         const sumTime = entry.machineTime + entry.extraTime;
         
@@ -433,7 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const entryTotalTime = entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
       return sum + entryTotalTime;
     }, 0);
-    const totalCoefficient = calculateCoefficient(totalTime, state.main.baseTime);
+    const baseTime = state.main.baseTime || 600; // Значение по умолчанию
+    const totalCoefficient = calculateCoefficient(totalTime, baseTime);
     
     const summaryDiv = document.createElement('div');
     summaryDiv.className = 'machine-group';
