@@ -236,33 +236,33 @@ document.addEventListener('DOMContentLoaded', () => {
     editingEntryIndex = entryIndex;
     selectedDate = date;
     
-    // Открываем диалог добавления записи с заполненными данными
+    // Сначала заполняем поля данными записи
+    const recordDate = document.getElementById('recordDate');
+    const recordMachine = document.getElementById('recordMachine');
+    const recordPart = document.getElementById('recordPart');
+    const recordOperation = document.getElementById('recordOperation');
+    const recordMachineTime = document.getElementById('recordMachineTime');
+    const recordExtraTime = document.getElementById('recordExtraTime');
+    const recordQuantity = document.getElementById('recordQuantity');
+    
+    if (recordDate) recordDate.value = date;
+    if (recordMachine) recordMachine.value = entry.machine;
+    if (recordPart) recordPart.value = entry.part;
+    if (recordOperation) recordOperation.value = entry.operation;
+    if (recordMachineTime) recordMachineTime.value = entry.machineTime;
+    if (recordExtraTime) recordExtraTime.value = entry.extraTime;
+    if (recordQuantity) recordQuantity.value = entry.quantity;
+    
+    // ТЕПЕРЬ открываем диалог (поля уже заполнены)
     openAddRecordDialog(date, true); // true = режим редактирования
     
-    // Заполняем поля данными записи
+    // Обновляем опции после открытия диалога
     setTimeout(() => {
-      const recordDate = document.getElementById('recordDate');
-      const recordMachine = document.getElementById('recordMachine');
-      const recordPart = document.getElementById('recordPart');
-      const recordOperation = document.getElementById('recordOperation');
-      const recordMachineTime = document.getElementById('recordMachineTime');
-      const recordExtraTime = document.getElementById('recordExtraTime');
-      const recordQuantity = document.getElementById('recordQuantity');
-      
-      if (recordDate) recordDate.value = date;
-      if (recordMachine) recordMachine.value = entry.machine;
-      if (recordPart) recordPart.value = entry.part;
-      if (recordOperation) recordOperation.value = entry.operation;
-      if (recordMachineTime) recordMachineTime.value = entry.machineTime;
-      if (recordExtraTime) recordExtraTime.value = entry.extraTime;
-      if (recordQuantity) recordQuantity.value = entry.quantity;
-      
-      // Обновляем опции
       updateMachineOptions();
       updatePartOptions();
       updateOperationOptions();
       updateTotalTime();
-    }, 100);
+    }, 50);
   };
   
   window.deleteEntry = function(date, entryIndex) {
