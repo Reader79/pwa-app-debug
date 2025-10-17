@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>PWA App</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./assets/icons/icon.svg">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <h1 class="app-title">Моё PWA</h1>
+      <button class="icon-button" id="settingsButton" aria-label="Открыть настройки" title="Настройки">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.04 7.04 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.82 13.16a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.44.34.7.22l2.39-.96c.5.41 1.05.74 1.63.94l.36 2.54c.04.24.25.42.5.42h3.8c.25 0 .46-.18.5-.42l.36-2.54c.58-.23 1.12-.53 1.63-.94l2.39.96c.26.12.56.02.7-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/>
+        </svg>
+      </button>
+    </header>
+
+    <main class="app-main">
+      <div class="button-grid">
+        <button class="primary" id="actionOne">Ввод данных</button>
+        <button class="secondary" id="actionTwo">Действие 2</button>
+        <button class="secondary" id="actionThree">Действие 3</button>
+      </div>
+      
+      <div class="app-controls">
+        <button class="secondary" id="installApp" style="display: none;">Установить приложение</button>
+        <button class="secondary" id="refreshApp">Обновить приложение</button>
+      </div>
+    </main>
+
+    <dialog id="dataDialog" class="settings-dialog" aria-labelledby="dataTitle">
+      <form method="dialog" class="settings-content">
+        <header class="settings-header">
+          <h2 id="dataTitle">Календарь смен</h2>
+          <button class="icon-button" id="closeData" aria-label="Закрыть календарь" value="cancel">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+              <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.9 4.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.41Z"/>
+            </svg>
+          </button>
+        </header>
+        <section class="settings-body">
+          <div class="section-header">
+            <div class="calendar-nav">
+              <button class="secondary" id="prevMonth" type="button" aria-label="Предыдущий месяц">◀</button>
+              <div id="monthLabel"></div>
+              <button class="secondary" id="nextMonth" type="button" aria-label="Следующий месяц">▶</button>
+            </div>
+          </div>
+          <div class="calendar" id="calendar"></div>
+        </section>
+        <footer class="settings-footer">
+          <button class="primary" value="cancel">Закрыть</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle">
+      <form method="dialog" class="settings-content">
+        <header class="settings-header">
+          <h2 id="settingsTitle">Настройки</h2>
+          <button class="icon-button" id="closeSettings" aria-label="Закрыть настройки" value="cancel">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+              <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.9 4.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.41Z"/>
+            </svg>
+          </button>
+        </header>
+
+        <nav class="tabs" role="tablist" aria-label="Настройки вкладки">
+          <button class="tab active" type="button" role="tab" aria-selected="true" id="tab-main" data-tab="main">Основное</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" id="tab-machines" data-tab="machines">Станки</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" id="tab-parts" data-tab="parts">Детали</button>
+        </nav>
+
+        <section class="settings-body">
+          <div class="tab-panel" id="panel-main" data-panel="main">
+            <div class="field">
+              <label for="operatorName">Фамилия и инициалы оператора</label>
+              <input id="operatorName" type="text" placeholder="Иванов И.И.">
+            </div>
+            <div class="field">
+              <label for="shiftNumber">№ смены (1-4)</label>
+              <select id="shiftNumber">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="baseTime">Базовое время (мин)</label>
+              <input id="baseTime" type="number" min="1" step="1" placeholder="600">
+            </div>
+            <p class="hint">Якорная дата графика: 11.10.2025</p>
+          </div>
+
+          <div class="tab-panel hidden" id="panel-machines" data-panel="machines">
+            <div class="row">
+              <input id="newMachine" type="text" placeholder="Название станка">
+              <button class="primary" id="addMachine" type="button">Добавить</button>
+            </div>
+            <ul id="machinesList" class="list"></ul>
+          </div>
+
+          <div class="tab-panel hidden" id="panel-parts" data-panel="parts">
+            <div class="row">
+              <input id="newPart" type="text" placeholder="Название детали">
+              <button class="primary" id="addPart" type="button">Добавить</button>
+            </div>
+            <div id="partsContainer" class="parts"></div>
+          </div>
+        </section>
+        <footer class="settings-footer">
+          <button class="secondary" value="cancel">Отмена</button>
+          <button class="primary" value="default">Сохранить</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="operationsDialog" class="settings-dialog" aria-labelledby="operationsTitle">
+      <form method="dialog" class="settings-content">
+        <header class="settings-header">
+          <h2 id="operationsTitle">Операции детали</h2>
+          <button class="icon-button" id="closeOperations" aria-label="Закрыть операции" value="cancel">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+              <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.9 4.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.41L13.41 12l4.89-4.89a1 1 0 0 0 0-1.41Z"/>
+            </svg>
+          </button>
+        </header>
+        <section class="settings-body">
+          <div id="operationsContainer" class="ops"></div>
+        </section>
+        <footer class="settings-footer">
+          <button class="secondary" value="cancel">Закрыть</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <script src="./app.js" defer></script>
+  </body>
+  </html>
+
+
