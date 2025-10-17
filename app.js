@@ -270,7 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (recordDate) recordDate.value = date;
     if (recordMachine) recordMachine.value = entry.machine;
-    if (recordPart) recordPart.value = entry.part;
+    
+    // Находим ID детали по имени
+    const part = state.parts.find(p => p.name === entry.part);
+    if (recordPart) recordPart.value = part ? part.id : '';
+    
     if (recordOperation) recordOperation.value = entry.operation;
     if (recordMachineTime) recordMachineTime.value = entry.machineTime;
     if (recordExtraTime) recordExtraTime.value = entry.extraTime;
@@ -1203,6 +1207,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Режим редактирования - заменяем существующую запись
       const record = state.records.find(r => r.date === date);
       if (record && record.entries[editingEntryIndex]) {
+        console.log('Редактируем запись:', {
+          index: editingEntryIndex,
+          oldEntry: record.entries[editingEntryIndex],
+          newEntry: newEntry,
+          allEntries: record.entries
+        });
         record.entries[editingEntryIndex] = newEntry;
         console.log('Запись отредактирована:', record.entries[editingEntryIndex]);
       }
