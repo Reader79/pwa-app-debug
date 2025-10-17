@@ -473,10 +473,21 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsSection.style.display = 'block';
   }
   
-  function formatDate(dateString) {
-    // Парсим дату без учета часового пояса
-    const [year, month, day] = dateString.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  function formatDate(dateInput) {
+    let date;
+    
+    // Если это строка, парсим её
+    if (typeof dateInput === 'string') {
+      const [year, month, day] = dateInput.split('-');
+      date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    } else if (dateInput instanceof Date) {
+      // Если это объект Date, используем его напрямую
+      date = dateInput;
+    } else {
+      // Fallback
+      date = new Date(dateInput);
+    }
+    
     return date.toLocaleDateString('ru-RU', { 
       day: '2-digit', 
       month: '2-digit', 
