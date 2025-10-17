@@ -34,7 +34,7 @@
     <main class="app-main">
       <div class="button-grid">
         <button class="primary" id="actionOne">Ввод данных</button>
-        <button class="secondary" id="actionTwo">Действие 2</button>
+        <button class="secondary" id="actionTwo">Добавить запись</button>
         <button class="secondary" id="actionThree">Действие 3</button>
       </div>
       
@@ -144,6 +144,99 @@
           <button class="secondary" value="cancel">Закрыть</button>
         </footer>
       </form>
+    </dialog>
+
+    <!-- Диалог добавления записи -->
+    <dialog id="addRecordDialog" class="settings-dialog" aria-labelledby="addRecordTitle">
+      <div class="settings-content">
+        <div class="settings-header">
+          <h2 id="addRecordTitle">Добавить запись</h2>
+          <button class="icon-button" id="closeAddRecord" aria-label="Закрыть">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="settings-body">
+          <!-- Календарь выбора даты -->
+          <div class="field">
+            <label for="recordDate">Выберите дату:</label>
+            <input type="date" id="recordDate" required>
+          </div>
+          
+          <!-- Информация о смене -->
+          <div class="field">
+            <div id="shiftInfo" style="padding: 12px; background: var(--card-elevated); border-radius: var(--border-radius-sm); border: 1px solid rgba(255,255,255,0.1);">
+              <strong>Тип смены:</strong> <span id="shiftTypeDisplay">-</span>
+            </div>
+          </div>
+          
+          <!-- Выбор станка -->
+          <div class="field">
+            <label for="recordMachine">Станок:</label>
+            <select id="recordMachine" required>
+              <option value="">Выберите станок</option>
+            </select>
+          </div>
+          
+          <!-- Выбор детали -->
+          <div class="field">
+            <label for="recordPart">Деталь:</label>
+            <select id="recordPart" required>
+              <option value="">Выберите деталь</option>
+            </select>
+          </div>
+          
+          <!-- Выбор операции -->
+          <div class="field">
+            <label for="recordOperation">Операция:</label>
+            <select id="recordOperation" required>
+              <option value="">Выберите операцию</option>
+            </select>
+          </div>
+          
+          <!-- Машинное время -->
+          <div class="field">
+            <label for="recordMachineTime">Машинное время (мин):</label>
+            <input type="number" id="recordMachineTime" min="0" step="0.1" required>
+          </div>
+          
+          <!-- Дополнительное время -->
+          <div class="field">
+            <label for="recordExtraTime">Дополнительное время (мин):</label>
+            <input type="number" id="recordExtraTime" min="0" step="0.1" value="0">
+          </div>
+          
+          <!-- Количество деталей -->
+          <div class="field">
+            <label for="recordQuantity">Количество деталей:</label>
+            <input type="number" id="recordQuantity" min="1" step="1" value="1" required>
+          </div>
+          
+          <!-- Общее время (автоматический расчет) -->
+          <div class="field">
+            <label>Общее время:</label>
+            <div id="totalTimeDisplay" style="padding: 12px; background: var(--card); border-radius: var(--border-radius-sm); border: 1px solid rgba(255,255,255,0.1); font-weight: 600; color: var(--primary); text-align: center;">
+              0 мин
+            </div>
+          </div>
+          
+          <!-- Кнопки -->
+          <div class="row" style="margin-top: 20px;">
+            <button type="button" class="primary" id="addRecordEntry">Добавить в смену</button>
+            <button type="button" class="secondary" id="saveRecord">Сохранить смену</button>
+          </div>
+          
+          <!-- Список добавленных записей -->
+          <div class="field" id="entriesList" style="display: none;">
+            <label>Записи в смене:</label>
+            <div id="entriesContainer" style="max-height: 200px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: var(--border-radius-sm); padding: 12px;">
+              <!-- Записи будут добавляться динамически -->
+            </div>
+          </div>
+        </div>
+      </div>
     </dialog>
 
     <script src="./app.js" defer></script>

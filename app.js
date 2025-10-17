@@ -23,15 +23,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const operationsDialog = document.getElementById('operationsDialog');
   const closeOperations = document.getElementById('closeOperations');
   const operationsContainer = document.getElementById('operationsContainer');
+  
+  // Элементы диалога добавления записи
+  const addRecordDialog = document.getElementById('addRecordDialog');
+  const closeAddRecord = document.getElementById('closeAddRecord');
+  const recordDate = document.getElementById('recordDate');
+  const shiftTypeDisplay = document.getElementById('shiftTypeDisplay');
+  const recordMachine = document.getElementById('recordMachine');
+  const recordPart = document.getElementById('recordPart');
+  const recordOperation = document.getElementById('recordOperation');
+  const recordMachineTime = document.getElementById('recordMachineTime');
+  const recordExtraTime = document.getElementById('recordExtraTime');
+  const recordQuantity = document.getElementById('recordQuantity');
+  const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+  const addRecordEntry = document.getElementById('addRecordEntry');
+  const saveRecord = document.getElementById('saveRecord');
+  const entriesList = document.getElementById('entriesList');
+  const entriesContainer = document.getElementById('entriesContainer');
 
   // Data storage
   const STORAGE_KEY = 'pwa-settings-v1';
   const defaultState = {
     main: { operatorName: '', shiftNumber: 1, baseTime: 600 },
     machines: [],
-    parts: [] // each: { id, name, operations: [{name, machineTime, extraTime}] }
+    parts: [], // each: { id, name, operations: [{name, machineTime, extraTime}] }
+    records: [] // each: { id, date, shiftType, entries: [{machine, part, operation, machineTime, extraTime, quantity, totalTime}] }
   };
   let state = loadState();
+  
+  // Переменные для работы с записями
+  let currentRecord = null;
+  let currentEntries = [];
 
   function loadState(){
     try {
@@ -42,6 +64,143 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch { return structuredClone(defaultState); }
   }
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  // Функции для работы с записями
+  function getShiftType(date, shiftNumber) {
+    // Логика определения типа смены по дате и номеру смены
+    // 16-дневный цикл: [D,D,O,O,D,D,O,O,N,N,O,O,N,N,O,O]
+    const anchorDate = new Date('2025-10-11'); // Якорная дата
+    const targetDate = new Date(date);
+    const daysDiff = Math.floor((targetDate - anchorDate) / (1000 * 60 * 60 * 24));
+    const cyclePosition = ((daysDiff % 16) + 16) % 16;
+    
+    const cycle = ['D','D','O','O','D','D','O','O','N','N','O','O','N','N','O','O'];
+    const shiftOffset = (shiftNumber - 1) * 4; // Смещение для разных смен
+    const actualPosition = (cyclePosition + shiftOffset) % 16;
+    
+    return cycle[actualPosition];
+  }
+
+  function calculateTotalTime(machineTime, extraTime, quantity) {
+    return (machineTime + extraTime) * quantity;
+  }
+
+  function calculateCoefficient(totalTime, baseTime) {
+    return Math.round((totalTime / baseTime) * 100) / 100;
+  }
+
+  // Функции для работы с диалогом добавления записи
+  function openAddRecordDialog() {
+    addRecordDialog.showModal();
+    currentRecord = null;
+    currentEntries = [];
+    recordDate.value = new Date().toISOString().split('T')[0];
+    updateShiftType();
+    updateMachineOptions();
+    updatePartOptions();
+    updateOperationOptions();
+    updateTotalTime();
+    hideEntriesList();
+  }
+
+  function updateShiftType() {
+    const date = recordDate.value;
+    const shiftNumber = state.main.shiftNumber;
+    const shiftType = getShiftType(date, shiftNumber);
+    
+    let displayText = '';
+    switch(shiftType) {
+      case 'D': displayText = 'Дневная смена'; break;
+      case 'N': displayText = 'Ночная смена'; break;
+      case 'O': displayText = 'Выходной день'; break;
+    }
+    
+    shiftTypeDisplay.textContent = displayText;
+  }
+
+  function updateMachineOptions() {
+    recordMachine.innerHTML = '<option value="">Выберите станок</option>';
+    state.machines.forEach(machine => {
+      const option = document.createElement('option');
+      option.value = machine;
+      option.textContent = machine;
+      recordMachine.appendChild(option);
+    });
+  }
+
+  function updatePartOptions() {
+    recordPart.innerHTML = '<option value="">Выберите деталь</option>';
+    state.parts.forEach(part => {
+      const option = document.createElement('option');
+      option.value = part.id;
+      option.textContent = part.name;
+      recordPart.appendChild(option);
+    });
+  }
+
+  function updateOperationOptions() {
+    recordOperation.innerHTML = '<option value="">Выберите операцию</option>';
+    const selectedPartId = recordPart.value;
+    if (selectedPartId) {
+      const part = state.parts.find(p => p.id === selectedPartId);
+      if (part && part.operations) {
+        part.operations.forEach(op => {
+          const option = document.createElement('option');
+          option.value = op.name;
+          option.textContent = op.name;
+          option.dataset.machineTime = op.machineTime || 0;
+          option.dataset.extraTime = op.extraTime || 0;
+          recordOperation.appendChild(option);
+        });
+      }
+    }
+  }
+
+  function updateTotalTime() {
+    const machineTime = parseFloat(recordMachineTime.value) || 0;
+    const extraTime = parseFloat(recordExtraTime.value) || 0;
+    const quantity = parseInt(recordQuantity.value) || 0;
+    const total = calculateTotalTime(machineTime, extraTime, quantity);
+    totalTimeDisplay.textContent = `${total} мин`;
+  }
+
+  function showEntriesList() {
+    entriesList.style.display = 'block';
+  }
+
+  function hideEntriesList() {
+    entriesList.style.display = 'none';
+  }
+
+  function renderEntries() {
+    entriesContainer.innerHTML = '';
+    currentEntries.forEach((entry, index) => {
+      const entryDiv = document.createElement('div');
+      entryDiv.style.cssText = 'padding: 12px; margin: 8px 0; background: var(--card); border-radius: var(--border-radius-sm); border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;';
+      
+      entryDiv.innerHTML = `
+        <div>
+          <strong>${entry.machine}</strong> - ${entry.part} - ${entry.operation}<br>
+          <small>Время: ${entry.machineTime}+${entry.extraTime} мин × ${entry.quantity} = ${entry.totalTime} мин</small>
+        </div>
+        <button type="button" class="icon-only" onclick="removeEntry(${index})" title="Удалить">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path fill="currentColor" d="M9 3a1 1 0 0 0-1 1v1H5v2h14V5h-3V4a1 1 0 0 0-1-1H9Zm-3 6h12l-1 9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2l-1-9Zm4 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/>
+          </svg>
+        </button>
+      `;
+      
+      entriesContainer.appendChild(entryDiv);
+    });
+  }
+
+  function removeEntry(index) {
+    currentEntries.splice(index, 1);
+    renderEntries();
+    if (currentEntries.length === 0) {
+      hideEntriesList();
+    }
+  }
 
   function hydrateMain(){
     operatorName.value = state.main.operatorName || '';
@@ -504,6 +663,92 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
+  // Обработчики событий для диалога добавления записи
+  actionTwo?.addEventListener('click', openAddRecordDialog);
+  closeAddRecord?.addEventListener('click', () => addRecordDialog.close());
+  
+  recordDate?.addEventListener('change', updateShiftType);
+  recordPart?.addEventListener('change', updateOperationOptions);
+  recordOperation?.addEventListener('change', () => {
+    const selectedOption = recordOperation.options[recordOperation.selectedIndex];
+    if (selectedOption.dataset.machineTime) {
+      recordMachineTime.value = selectedOption.dataset.machineTime;
+    }
+    if (selectedOption.dataset.extraTime) {
+      recordExtraTime.value = selectedOption.dataset.extraTime;
+    }
+    updateTotalTime();
+  });
+  
+  recordMachineTime?.addEventListener('input', updateTotalTime);
+  recordExtraTime?.addEventListener('input', updateTotalTime);
+  recordQuantity?.addEventListener('input', updateTotalTime);
+  
+  addRecordEntry?.addEventListener('click', () => {
+    if (!recordMachine.value || !recordPart.value || !recordOperation.value || !recordMachineTime.value || !recordQuantity.value) {
+      alert('Заполните все обязательные поля');
+      return;
+    }
+    
+    const part = state.parts.find(p => p.id === recordPart.value);
+    const entry = {
+      machine: recordMachine.value,
+      part: part.name,
+      operation: recordOperation.value,
+      machineTime: parseFloat(recordMachineTime.value),
+      extraTime: parseFloat(recordExtraTime.value) || 0,
+      quantity: parseInt(recordQuantity.value),
+      totalTime: calculateTotalTime(parseFloat(recordMachineTime.value), parseFloat(recordExtraTime.value) || 0, parseInt(recordQuantity.value))
+    };
+    
+    currentEntries.push(entry);
+    renderEntries();
+    showEntriesList();
+    
+    // Очистка формы
+    recordMachine.value = '';
+    recordPart.value = '';
+    recordOperation.innerHTML = '<option value="">Выберите операцию</option>';
+    recordMachineTime.value = '';
+    recordExtraTime.value = '0';
+    recordQuantity.value = '1';
+    updateTotalTime();
+  });
+  
+  saveRecord?.addEventListener('click', () => {
+    if (currentEntries.length === 0) {
+      alert('Добавьте хотя бы одну запись');
+      return;
+    }
+    
+    const date = recordDate.value;
+    const shiftType = getShiftType(date, state.main.shiftNumber);
+    
+    if (shiftType === 'O') {
+      alert('Нельзя добавлять записи в выходной день');
+      return;
+    }
+    
+    const recordId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36));
+    
+    const record = {
+      id: recordId,
+      date: date,
+      shiftType: shiftType,
+      entries: [...currentEntries]
+    };
+    
+    // Удаляем старую запись на эту дату, если есть
+    state.records = state.records.filter(r => r.date !== date);
+    
+    // Добавляем новую запись
+    state.records.push(record);
+    saveState();
+    
+    alert('Запись сохранена');
+    addRecordDialog.close();
+  });
 
   // Init
   hydrateMain();
