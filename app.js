@@ -362,6 +362,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const coefficient = calculateCoefficient(entry.totalTime, state.main.baseTime);
         
+        const sumTime = entry.machineTime + entry.extraTime;
+        
         operationData.innerHTML = `
           <div class="data-row">
             <span class="data-label">Машинное время:</span>
@@ -370,6 +372,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="data-row">
             <span class="data-label">Дополнительное:</span>
             <span class="data-value">${entry.extraTime} мин</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Σ-мин:</span>
+            <span class="data-value">${sumTime} мин</span>
           </div>
           <div class="data-row">
             <span class="data-label">Количество:</span>
