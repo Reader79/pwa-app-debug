@@ -825,7 +825,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const isWorkDay = type === 'D' || type === 'N';
       
       if (isPastDate && isWorkDay) {
-        const dateString = formatDate(date);
+        // Преобразуем дату в формат YYYY-MM-DD для сравнения с записями
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
         const hasData = state.records.some(record => record.date === dateString && record.entries.length > 0);
         
         const statusIndicator = document.createElement('div');
