@@ -11,9 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const importData = document.getElementById('importData');
   const importStatus = document.getElementById('importStatus');
   
-  // Элементы для редактирования записей
-  const editRecords = document.getElementById('editRecords');
-  const deleteAllRecords = document.getElementById('deleteAllRecords');
 
   const actionOne = document.getElementById('actionOne');
   const actionTwo = document.getElementById('actionTwo');
@@ -286,8 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsSection = document.getElementById('resultsSection');
     const resultsTitle = document.getElementById('resultsTitle');
     const resultsContainer = document.getElementById('resultsContainer');
-    const editBtn = document.getElementById('editRecords');
-    const deleteBtn = document.getElementById('deleteAllRecords');
     
     console.log('Elements found:', { resultsSection, resultsTitle, resultsContainer });
     
@@ -305,14 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!record) {
       console.log('No record found, hiding results section');
       resultsSection.style.display = 'none';
-      if (editBtn) editBtn.style.display = 'none';
-      if (deleteBtn) deleteBtn.style.display = 'none';
       return;
     }
-    
-    // Показываем кнопки редактирования
-    if (editBtn) editBtn.style.display = 'inline-block';
-    if (deleteBtn) deleteBtn.style.display = 'inline-block';
     
     const shiftTypeText = record.shiftType === 'D' ? 'Дневная смена' : 
                          record.shiftType === 'N' ? 'Ночная смена' : 
@@ -1029,33 +1018,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  // Обработчики событий для редактирования записей
-  editRecords?.addEventListener('click', () => {
-    // Переключаем режим редактирования
-    const isEditing = editRecords.textContent.includes('Сохранить');
-    if (isEditing) {
-      // Сохраняем изменения
-      editRecords.textContent = '✏️ Редактировать';
-      editRecords.style.background = '';
-    } else {
-      // Включаем режим редактирования
-      editRecords.textContent = '💾 Сохранить';
-      editRecords.style.background = '#22c55e';
-    }
-  });
-  
-  deleteAllRecords?.addEventListener('click', () => {
-    if (!confirm('Удалить все записи за этот день?')) return;
-    
-    const resultsTitle = document.getElementById('resultsTitle');
-    const dateMatch = resultsTitle?.textContent.match(/(\d{2}\.\d{2}\.\d{4})/);
-    if (dateMatch) {
-      const date = dateMatch[1].split('.').reverse().join('-');
-      state.records = state.records.filter(r => r.date !== date);
-      saveState();
-      showResults(date);
-    }
-  });
 
 
   // Register Service Worker
