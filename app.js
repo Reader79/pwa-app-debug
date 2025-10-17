@@ -110,23 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
       recordDate.value = new Date().toISOString().split('T')[0];
     }
     
-    // В режиме редактирования скрываем список записей
-    if (isEditMode) {
-      hideEntriesList();
-      // Скрываем кнопки добавления в смену
-      const addToShiftBtn = document.getElementById('addToShiftBtn');
-      const saveShiftBtn = document.getElementById('saveShiftBtn');
-      if (addToShiftBtn) addToShiftBtn.style.display = 'none';
-      if (saveShiftBtn) saveShiftBtn.style.display = 'none';
-    } else {
-      // В обычном режиме показываем кнопки
-      currentEntries = [];
-      hideEntriesList();
-      const addToShiftBtn = document.getElementById('addToShiftBtn');
-      const saveShiftBtn = document.getElementById('saveShiftBtn');
-      if (addToShiftBtn) addToShiftBtn.style.display = 'block';
-      if (saveShiftBtn) saveShiftBtn.style.display = 'block';
-    }
+    // Скрываем список записей в любом режиме
+    hideEntriesList();
     
     // Обновляем опции, но в режиме редактирования сохраняем выбранные значения
     updateShiftType();
@@ -1139,38 +1124,14 @@ document.addEventListener('DOMContentLoaded', () => {
   recordExtraTime?.addEventListener('input', updateTotalTime);
   recordQuantity?.addEventListener('input', updateTotalTime);
   
-  addRecordEntry?.addEventListener('click', () => {
+  
+  saveRecord?.addEventListener('click', () => {
+    // Проверяем заполненность полей
     if (!recordMachine.value || !recordPart.value || !recordOperation.value || !recordMachineTime.value || !recordQuantity.value) {
       alert('Заполните все обязательные поля');
       return;
     }
     
-    const part = state.parts.find(p => p.id === recordPart.value);
-    const entry = {
-      machine: recordMachine.value,
-      part: part.name,
-      operation: recordOperation.value,
-      machineTime: parseFloat(recordMachineTime.value),
-      extraTime: parseFloat(recordExtraTime.value) || 0,
-      quantity: parseInt(recordQuantity.value),
-      totalTime: calculateTotalTime(parseFloat(recordMachineTime.value), parseFloat(recordExtraTime.value) || 0, parseInt(recordQuantity.value))
-    };
-    
-    currentEntries.push(entry);
-    renderEntries();
-    showEntriesList();
-    
-    // Очистка формы
-    recordMachine.value = '';
-    recordPart.value = '';
-    recordOperation.innerHTML = '<option value="">Выберите операцию</option>';
-    recordMachineTime.value = '';
-    recordExtraTime.value = '0';
-    recordQuantity.value = '1';
-    updateTotalTime();
-  });
-  
-  saveRecord?.addEventListener('click', () => {
     const date = recordDate.value;
     const shiftType = getShiftType(new Date(date));
     
@@ -1179,53 +1140,45 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
+    // Создаем запись из текущих полей
+    const part = state.parts.find(p => p.id === recordPart.value);
+    const newEntry = {
+      machine: recordMachine.value,
+      part: part.name,
+      operation: recordOperation.value,
+      machineTime: parseInt(recordMachineTime.value) || 0,
+      extraTime: parseInt(recordExtraTime.value) || 0,
+      quantity: parseInt(recordQuantity.value) || 0
+    };
+    
     // Проверяем режим редактирования
     if (editingEntryIndex !== null) {
       // Режим редактирования - заменяем существующую запись
       const record = state.records.find(r => r.date === date);
       if (record && record.entries[editingEntryIndex]) {
-        // Создаем новую запись из текущих полей
-        const newEntry = {
-          machine: recordMachine.value,
-          part: recordPart.value,
-          operation: recordOperation.value,
-          machineTime: parseInt(recordMachineTime.value) || 0,
-          extraTime: parseInt(recordExtraTime.value) || 0,
-          quantity: parseInt(recordQuantity.value) || 0
-        };
-        
-        // Заменяем запись на новую
         record.entries[editingEntryIndex] = newEntry;
         console.log('Запись отредактирована:', record.entries[editingEntryIndex]);
       }
       editingEntryIndex = null; // Сбрасываем режим редактирования
     } else {
-      // Обычный режим добавления
-      if (currentEntries.length === 0) {
-        alert('Добавьте хотя бы одну запись');
-        return;
-      }
-      
-      const recordId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36));
-      
-      const record = {
-        id: recordId,
-        date: date,
-        shiftType: shiftType,
-        entries: [...currentEntries]
-      };
-      
-      // Проверяем, есть ли уже запись на эту дату
+      // Обычный режим добавления - добавляем новую запись
       const existingRecordIndex = state.records.findIndex(r => r.date === date);
       
       if (existingRecordIndex !== -1) {
-        // Если запись уже существует, добавляем новые записи к существующим
-        state.records[existingRecordIndex].entries.push(...currentEntries);
-        console.log('Добавлены записи к существующей смене:', state.records[existingRecordIndex]);
+        // Если запись уже существует, добавляем новую запись к существующим
+        state.records[existingRecordIndex].entries.push(newEntry);
+        console.log('Добавлена запись к существующей смене:', newEntry);
       } else {
-        // Если записи нет, добавляем новую запись
+        // Если записи нет, создаем новую
+        const recordId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Math.random().toString(36).slice(2) + Date.now().toString(36));
+        const record = {
+          id: recordId,
+          date: date,
+          shiftType: shiftType,
+          entries: [newEntry]
+        };
         state.records.push(record);
-        console.log('Создана новая запись:', record);
+        console.log('Создана новая смена:', record);
       }
     }
     
