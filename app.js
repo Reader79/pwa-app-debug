@@ -352,7 +352,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Заголовок операции
         const operationHeader = document.createElement('div');
         operationHeader.className = 'operation-header';
-        operationHeader.textContent = `${entry.part} - ${entry.operation}`;
+        
+        // Создаем две строки: название детали и номер детали
+        const partName = document.createElement('div');
+        partName.className = 'part-name';
+        partName.textContent = entry.part;
+        
+        const partNumber = document.createElement('div');
+        partNumber.className = 'part-number';
+        partNumber.textContent = `${entry.operation}`;
+        
+        operationHeader.appendChild(partName);
+        operationHeader.appendChild(partNumber);
         operationCard.appendChild(operationHeader);
         
         // Данные операции
