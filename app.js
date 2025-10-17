@@ -202,6 +202,134 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Функции для отображения результатов
+  function showResults(date) {
+    const resultsSection = document.getElementById('resultsSection');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    if (!resultsSection || !resultsTitle || !resultsContainer) return;
+    
+    const record = state.records.find(r => r.date === date);
+    if (!record) {
+      resultsSection.style.display = 'none';
+      return;
+    }
+    
+    const shiftTypeText = record.shiftType === 'D' ? 'Дневная смена' : 
+                         record.shiftType === 'N' ? 'Ночная смена' : 'Выходной день';
+    
+    resultsTitle.textContent = `Результаты работы - ${formatDate(date)}, ${shiftTypeText}`;
+    resultsContainer.innerHTML = '';
+    
+    // Группировка по станкам
+    const machineGroups = {};
+    record.entries.forEach(entry => {
+      if (!machineGroups[entry.machine]) {
+        machineGroups[entry.machine] = [];
+      }
+      machineGroups[entry.machine].push(entry);
+    });
+    
+    // Создание таблиц для каждого станка
+    Object.keys(machineGroups).forEach(machine => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'machine-group';
+      
+      const title = document.createElement('h4');
+      title.className = 'machine-title';
+      title.textContent = `Станок: ${machine}`;
+      groupDiv.appendChild(title);
+      
+      const table = document.createElement('table');
+      table.className = 'results-table';
+      
+      // Заголовок таблицы
+      const thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Деталь</th>
+          <th>Операция</th>
+          <th>Машинное время (мин)</th>
+          <th>Доп. время (мин)</th>
+          <th>Количество</th>
+          <th>Общее время (мин)</th>
+          <th>Коэффициент</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+      
+      // Тело таблицы
+      const tbody = document.createElement('tbody');
+      let machineTotalTime = 0;
+      
+      machineGroups[machine].forEach(entry => {
+        const coefficient = calculateCoefficient(entry.totalTime, state.main.baseTime);
+        machineTotalTime += entry.totalTime;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${entry.part}</td>
+          <td>${entry.operation}</td>
+          <td>${entry.machineTime}</td>
+          <td>${entry.extraTime}</td>
+          <td>${entry.quantity}</td>
+          <td class="total-time">${entry.totalTime}</td>
+          <td class="coefficient">${coefficient}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      
+      table.appendChild(tbody);
+      groupDiv.appendChild(table);
+      resultsContainer.appendChild(groupDiv);
+    });
+    
+    // Итоговая таблица
+    const totalTime = record.entries.reduce((sum, entry) => sum + entry.totalTime, 0);
+    const totalCoefficient = calculateCoefficient(totalTime, state.main.baseTime);
+    
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'machine-group';
+    
+    const summaryTitle = document.createElement('h4');
+    summaryTitle.className = 'machine-title';
+    summaryTitle.textContent = 'Итоговые показатели';
+    summaryDiv.appendChild(summaryTitle);
+    
+    const summaryTable = document.createElement('table');
+    summaryTable.className = 'results-table summary-table';
+    
+    summaryTable.innerHTML = `
+      <thead>
+        <tr>
+          <th>Общее время всех деталей (мин)</th>
+          <th>Коэффициент рабочего времени</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="total-time">${totalTime}</td>
+          <td class="coefficient">${totalCoefficient}</td>
+        </tr>
+      </tbody>
+    `;
+    
+    summaryDiv.appendChild(summaryTable);
+    resultsContainer.appendChild(summaryDiv);
+    
+    resultsSection.style.display = 'block';
+  }
+  
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+  }
+
   function hydrateMain(){
     operatorName.value = state.main.operatorName || '';
     shiftNumber.value = String(state.main.shiftNumber || 1);
@@ -525,6 +653,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isHoliday(date)){
         const corner = document.createElement('div'); corner.className='holiday-corner'; cell.appendChild(corner);
       }
+      
+      // Добавляем обработчик клика для показа результатов
+      cell.addEventListener('click', () => {
+        const dateString = date.toISOString().split('T')[0];
+        showResults(dateString);
+      });
+      
+      // Добавляем курсор для интерактивности
+      cell.style.cursor = 'pointer';
+      
       calendar.appendChild(cell);
     }
   }
