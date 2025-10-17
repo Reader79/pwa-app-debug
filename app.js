@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const importFile = document.getElementById('importFile');
   const importData = document.getElementById('importData');
   const importStatus = document.getElementById('importStatus');
+  
+  // Элементы для редактирования записей
+  const editRecords = document.getElementById('editRecords');
+  const deleteAllRecords = document.getElementById('deleteAllRecords');
 
   const actionOne = document.getElementById('actionOne');
   const actionTwo = document.getElementById('actionTwo');
@@ -218,6 +222,63 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Делаем функцию глобальной
   window.removeEntry = removeEntry;
+  
+  // Функции для редактирования и удаления записей
+  window.editEntry = function(date, entryIndex) {
+    const record = state.records.find(r => r.date === date);
+    if (!record || !record.entries[entryIndex]) return;
+    
+    const entry = record.entries[entryIndex];
+    
+    // Открываем диалог добавления записи с заполненными данными
+    openAddRecordDialog(date);
+    
+    // Заполняем поля данными записи
+    setTimeout(() => {
+      const recordDate = document.getElementById('recordDate');
+      const recordMachine = document.getElementById('recordMachine');
+      const recordPart = document.getElementById('recordPart');
+      const recordOperation = document.getElementById('recordOperation');
+      const recordMachineTime = document.getElementById('recordMachineTime');
+      const recordExtraTime = document.getElementById('recordExtraTime');
+      const recordQuantity = document.getElementById('recordQuantity');
+      
+      if (recordDate) recordDate.value = date;
+      if (recordMachine) recordMachine.value = entry.machine;
+      if (recordPart) recordPart.value = entry.part;
+      if (recordOperation) recordOperation.value = entry.operation;
+      if (recordMachineTime) recordMachineTime.value = entry.machineTime;
+      if (recordExtraTime) recordExtraTime.value = entry.extraTime;
+      if (recordQuantity) recordQuantity.value = entry.quantity;
+      
+      // Обновляем опции
+      updateMachineOptions();
+      updatePartOptions();
+      updateOperationOptions();
+      updateTotalTime();
+    }, 100);
+    
+    // Удаляем старую запись
+    record.entries.splice(entryIndex, 1);
+    saveState();
+  };
+  
+  window.deleteEntry = function(date, entryIndex) {
+    if (!confirm('Удалить эту запись?')) return;
+    
+    const record = state.records.find(r => r.date === date);
+    if (!record || !record.entries[entryIndex]) return;
+    
+    record.entries.splice(entryIndex, 1);
+    
+    // Если записей не осталось, удаляем весь день
+    if (record.entries.length === 0) {
+      state.records = state.records.filter(r => r.date !== date);
+    }
+    
+    saveState();
+    showResults(date); // Обновляем отображение
+  };
 
   // Функции для отображения результатов
   function showResults(date) {
@@ -225,6 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsSection = document.getElementById('resultsSection');
     const resultsTitle = document.getElementById('resultsTitle');
     const resultsContainer = document.getElementById('resultsContainer');
+    const editBtn = document.getElementById('editRecords');
+    const deleteBtn = document.getElementById('deleteAllRecords');
     
     console.log('Elements found:', { resultsSection, resultsTitle, resultsContainer });
     
@@ -242,8 +305,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!record) {
       console.log('No record found, hiding results section');
       resultsSection.style.display = 'none';
+      if (editBtn) editBtn.style.display = 'none';
+      if (deleteBtn) deleteBtn.style.display = 'none';
       return;
     }
+    
+    // Показываем кнопки редактирования
+    if (editBtn) editBtn.style.display = 'inline-block';
+    if (deleteBtn) deleteBtn.style.display = 'inline-block';
     
     const shiftTypeText = record.shiftType === 'D' ? 'Дневная смена' : 
                          record.shiftType === 'N' ? 'Ночная смена' : 
@@ -285,6 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <th>Количество</th>
           <th>Общее время (мин)</th>
           <th>Коэффициент</th>
+          <th>Действия</th>
         </tr>
       `;
       table.appendChild(thead);
@@ -293,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tbody = document.createElement('tbody');
       let machineTotalTime = 0;
       
-      machineGroups[machine].forEach(entry => {
+      machineGroups[machine].forEach((entry, entryIndex) => {
         const coefficient = calculateCoefficient(entry.totalTime, state.main.baseTime);
         machineTotalTime += entry.totalTime;
         
@@ -306,6 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${entry.quantity}</td>
           <td class="total-time">${entry.totalTime}</td>
           <td class="coefficient">${coefficient}</td>
+          <td>
+            <button class="secondary" onclick="editEntry('${date}', ${entryIndex})" style="margin-right: 4px; padding: 4px 8px; font-size: 0.8rem;">✏️</button>
+            <button class="secondary" onclick="deleteEntry('${date}', ${entryIndex})" style="padding: 4px 8px; font-size: 0.8rem; background: #dc2626;">🗑️</button>
+          </td>
         `;
         tbody.appendChild(row);
       });
@@ -929,6 +1003,34 @@ document.addEventListener('DOMContentLoaded', () => {
       showImportStatus(`Ошибка импорта: ${error.message}`, 'error');
       importData.disabled = false;
       importData.textContent = 'Импортировать';
+    }
+  });
+  
+  // Обработчики событий для редактирования записей
+  editRecords?.addEventListener('click', () => {
+    // Переключаем режим редактирования
+    const isEditing = editRecords.textContent.includes('Сохранить');
+    if (isEditing) {
+      // Сохраняем изменения
+      editRecords.textContent = '✏️ Редактировать';
+      editRecords.style.background = '';
+    } else {
+      // Включаем режим редактирования
+      editRecords.textContent = '💾 Сохранить';
+      editRecords.style.background = '#22c55e';
+    }
+  });
+  
+  deleteAllRecords?.addEventListener('click', () => {
+    if (!confirm('Удалить все записи за этот день?')) return;
+    
+    const resultsTitle = document.getElementById('resultsTitle');
+    const dateMatch = resultsTitle?.textContent.match(/(\d{2}\.\d{2}\.\d{4})/);
+    if (dateMatch) {
+      const date = dateMatch[1].split('.').reverse().join('-');
+      state.records = state.records.filter(r => r.date !== date);
+      saveState();
+      showResults(date);
     }
   });
 

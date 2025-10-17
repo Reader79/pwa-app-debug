@@ -65,7 +65,13 @@
           
           <!-- Результаты работы -->
           <div id="resultsSection" style="display: none; margin-top: 24px;">
-            <h3 id="resultsTitle" style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: var(--text);">Результаты работы</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 id="resultsTitle" style="margin: 0; font-size: 20px; font-weight: 600; color: var(--text);">Результаты работы</h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="secondary" id="editRecords" type="button" style="display: none;">✏️ Редактировать</button>
+                <button class="secondary" id="deleteAllRecords" type="button" style="display: none;">🗑️ Удалить все</button>
+              </div>
+            </div>
             <div id="resultsContainer">
               <!-- Таблицы будут добавляться динамически -->
             </div>
