@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Переменные для работы с записями
   let currentRecord = null;
   let currentEntries = [];
+  let selectedDate = null;
 
   function loadState(){
     try {
@@ -90,11 +91,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Функции для работы с диалогом добавления записи
-  function openAddRecordDialog() {
+  function openAddRecordDialog(date = null) {
     addRecordDialog.showModal();
     currentRecord = null;
     currentEntries = [];
-    recordDate.value = new Date().toISOString().split('T')[0];
+    
+    if (date) {
+      recordDate.value = date;
+    } else {
+      recordDate.value = new Date().toISOString().split('T')[0];
+    }
+    
     updateShiftType();
     updateMachineOptions();
     updatePartOptions();
@@ -106,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateShiftType() {
     const date = recordDate.value;
     const shiftNumber = state.main.shiftNumber;
-    const shiftType = getShiftTypeForRecord(date, shiftNumber);
+    const shiftType = getShiftType(new Date(date));
     
     let displayText = '';
     switch(shiftType) {
@@ -670,10 +677,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const corner = document.createElement('div'); corner.className='holiday-corner'; cell.appendChild(corner);
       }
       
-      // Добавляем обработчик клика для показа результатов
+      // Добавляем обработчик клика для выбора даты
       cell.addEventListener('click', () => {
         const dateString = date.toISOString().split('T')[0];
-        console.log('Clicked date:', dateString); // Отладка
+        selectedDate = dateString;
+        console.log('Selected date:', dateString);
+        
+        // Показываем кнопку добавления записи
+        const addRecordBtn = document.getElementById('addRecordFromCalendar');
+        if (addRecordBtn) {
+          addRecordBtn.style.display = 'inline-block';
+          addRecordBtn.textContent = `Добавить запись на ${formatDate(dateString)}`;
+        }
+        
+        // Показываем результаты, если есть
         showResults(dateString);
       });
       
@@ -820,7 +837,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // Обработчики событий для диалога добавления записи
-  actionTwo?.addEventListener('click', openAddRecordDialog);
+  const addRecordFromCalendar = document.getElementById('addRecordFromCalendar');
+  addRecordFromCalendar?.addEventListener('click', () => {
+    if (selectedDate) {
+      openAddRecordDialog(selectedDate);
+    }
+  });
   closeAddRecord?.addEventListener('click', () => addRecordDialog.close());
   
   recordDate?.addEventListener('change', updateShiftType);
@@ -878,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     const date = recordDate.value;
-    const shiftType = getShiftTypeForRecord(date, state.main.shiftNumber);
+    const shiftType = getShiftType(new Date(date));
     
     if (shiftType === 'O') {
       alert('Нельзя добавлять записи в выходной день');
