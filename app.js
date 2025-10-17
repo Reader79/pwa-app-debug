@@ -382,19 +382,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // PWA install flow
   window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('PWA: beforeinstallprompt event fired');
     e.preventDefault();
     deferredPrompt = e;
-    // Кнопка уже видна, просто активируем её
     installApp.disabled = false;
+    installApp.textContent = 'Установить приложение';
   });
   
   installApp?.addEventListener('click', async () => {
+    console.log('PWA: Install button clicked');
     if (deferredPrompt) {
-      // Используем стандартный prompt
+      console.log('PWA: Using deferred prompt');
       installApp.disabled = true;
       try {
         deferredPrompt.prompt();
         const choice = await deferredPrompt.userChoice;
+        console.log('PWA: User choice:', choice.outcome);
         if (choice.outcome === 'accepted') {
           installApp.textContent = 'Установлено!';
           installApp.disabled = true;
@@ -405,16 +408,27 @@ document.addEventListener('DOMContentLoaded', () => {
         deferredPrompt = null;
       }
     } else {
-      // Fallback для браузеров без beforeinstallprompt
-      alert('Для установки приложения:\n\nChrome/Edge: Меню (⋮) → "Установить приложение"\nSafari: Поделиться → "На экран Домой"\nFirefox: Меню → "Установить"');
+      console.log('PWA: No deferred prompt available');
+      // Проверяем, можно ли установить через другие способы
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        alert('Приложение уже установлено!');
+      } else {
+        alert('Для установки приложения:\n\nChrome/Edge: Меню (⋮) → "Установить приложение"\nSafari: Поделиться → "На экран Домой"\nFirefox: Меню → "Установить"');
+      }
     }
   });
   
   window.addEventListener('appinstalled', () => {
+    console.log('PWA: App installed successfully');
     installApp.textContent = 'Установлено!';
     installApp.disabled = true;
     deferredPrompt = null;
   });
+
+  // Диагностика PWA
+  console.log('PWA: Service Worker supported:', 'serviceWorker' in navigator);
+  console.log('PWA: Manifest loaded:', document.querySelector('link[rel="manifest"]')?.href);
+  console.log('PWA: Standalone mode:', window.matchMedia('(display-mode: standalone)').matches);
 
   // Init
   hydrateMain();

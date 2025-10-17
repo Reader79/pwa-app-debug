@@ -1,14 +1,28 @@
 {
-  "name": "Моё PWA",
-  "short_name": "PWA",
-  "start_url": ".",
-  "scope": ".",
+  "name": "PWA приложение для управления сменами",
+  "short_name": "PWA Смены",
+  "description": "Приложение для управления рабочими сменами и календарем",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0b1220",
   "theme_color": "#0f172a",
+  "categories": ["productivity", "utilities"],
+  "lang": "ru",
   "icons": [
-    { "src": "./assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "./assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
 
