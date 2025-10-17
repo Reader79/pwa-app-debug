@@ -100,10 +100,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Функции для работы с диалогом добавления записи
-  function openAddRecordDialog(date = null) {
+  function openAddRecordDialog(date = null, isEditMode = false) {
     addRecordDialog.showModal();
     currentRecord = null;
-    currentEntries = [];
+    
+    // Очищаем список записей только если это не режим редактирования
+    if (!isEditMode) {
+      currentEntries = [];
+      hideEntriesList();
+    }
     
     if (date) {
       recordDate.value = date;
@@ -116,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePartOptions();
     updateOperationOptions();
     updateTotalTime();
-    hideEntriesList();
   }
 
   function updateShiftType() {
@@ -233,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedDate = date;
     
     // Открываем диалог добавления записи с заполненными данными
-    openAddRecordDialog(date);
+    openAddRecordDialog(date, true); // true = режим редактирования
     
     // Заполняем поля данными записи
     setTimeout(() => {
