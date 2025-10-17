@@ -1,1 +1,4 @@
-.vercel
+# Локальные файлы разработки
+node_modules/
+*.log
+.DS_Store
