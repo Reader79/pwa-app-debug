@@ -103,11 +103,11 @@
           <div class="tab-panel" id="panel-main" data-panel="main">
             <div class="field">
               <label for="operatorName">Фамилия и инициалы оператора</label>
-              <input id="operatorName" type="text" placeholder="Иванов И.И.">
+              <input id="operatorName" name="operatorName" type="text" placeholder="Иванов И.И.">
             </div>
             <div class="field">
               <label for="shiftNumber">№ смены (1-4)</label>
-              <select id="shiftNumber">
+              <select id="shiftNumber" name="shiftNumber">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -116,13 +116,13 @@
             </div>
             <div class="field">
               <label for="baseTime">Базовое время (мин)</label>
-              <input id="baseTime" type="number" min="1" step="1" placeholder="600">
+              <input id="baseTime" name="baseTime" type="number" min="1" step="1" placeholder="600">
             </div>
           </div>
 
           <div class="tab-panel hidden" id="panel-machines" data-panel="machines">
             <div class="row">
-              <input id="newMachine" type="text" placeholder="Название станка">
+              <input id="newMachine" name="newMachine" type="text" placeholder="Название станка">
               <button class="primary" id="addMachine" type="button">Добавить</button>
             </div>
             <ul id="machinesList" class="list"></ul>
@@ -130,7 +130,7 @@
 
           <div class="tab-panel hidden" id="panel-parts" data-panel="parts">
             <div class="row">
-              <input id="newPart" type="text" placeholder="Название детали">
+              <input id="newPart" name="newPart" type="text" placeholder="Название детали">
               <button class="primary" id="addPart" type="button">Добавить</button>
             </div>
             <div id="partsContainer" class="parts"></div>
@@ -197,7 +197,7 @@
           <!-- Календарь выбора даты -->
           <div class="field">
             <label for="recordDate">Выберите дату:</label>
-            <input type="date" id="recordDate" required>
+            <input type="date" id="recordDate" name="recordDate" required>
           </div>
           
           <!-- Информация о смене -->
@@ -210,7 +210,7 @@
           <!-- Выбор станка -->
           <div class="field">
             <label for="recordMachine">Станок:</label>
-            <select id="recordMachine" required>
+            <select id="recordMachine" name="recordMachine" required>
               <option value="">Выберите станок</option>
             </select>
           </div>
@@ -218,7 +218,7 @@
           <!-- Выбор детали -->
           <div class="field">
             <label for="recordPart">Деталь:</label>
-            <select id="recordPart" required>
+            <select id="recordPart" name="recordPart" required>
               <option value="">Выберите деталь</option>
             </select>
           </div>
@@ -226,7 +226,7 @@
           <!-- Выбор операции -->
           <div class="field">
             <label for="recordOperation">Операция:</label>
-            <select id="recordOperation" required>
+            <select id="recordOperation" name="recordOperation" required>
               <option value="">Выберите операцию</option>
             </select>
           </div>
@@ -234,19 +234,19 @@
           <!-- Машинное время -->
           <div class="field">
             <label for="recordMachineTime">Машинное время (мин):</label>
-            <input type="number" id="recordMachineTime" min="0" step="0.1" required>
+            <input type="number" id="recordMachineTime" name="recordMachineTime" min="0" step="0.1" required>
           </div>
           
           <!-- Дополнительное время -->
           <div class="field">
             <label for="recordExtraTime">Дополнительное время (мин):</label>
-            <input type="number" id="recordExtraTime" min="0" step="0.1" value="0">
+            <input type="number" id="recordExtraTime" name="recordExtraTime" min="0" step="0.1" value="0">
           </div>
           
           <!-- Количество деталей -->
           <div class="field">
             <label for="recordQuantity">Количество деталей:</label>
-            <input type="number" id="recordQuantity" min="1" step="1" value="1" required>
+            <input type="number" id="recordQuantity" name="recordQuantity" min="1" step="1" value="1" required>
           </div>
           
           <!-- Общее время (автоматический расчет) -->
