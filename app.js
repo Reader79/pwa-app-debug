@@ -116,14 +116,32 @@ document.addEventListener('DOMContentLoaded', () => {
       recordDate.value = new Date().toISOString().split('T')[0];
     }
     
-    // В режиме редактирования НЕ обновляем опции, чтобы не очистить заполненные поля
-    if (!isEditMode) {
-      updateShiftType();
+    // Обновляем опции, но в режиме редактирования сохраняем выбранные значения
+    updateShiftType();
+    
+    if (isEditMode) {
+      // В режиме редактирования сохраняем текущие значения перед обновлением
+      const currentMachine = recordMachine.value;
+      const currentPart = recordPart.value;
+      const currentOperation = recordOperation.value;
+      
+      // Обновляем списки
       updateMachineOptions();
       updatePartOptions();
       updateOperationOptions();
-      updateTotalTime();
+      
+      // Восстанавливаем выбранные значения
+      if (currentMachine) recordMachine.value = currentMachine;
+      if (currentPart) recordPart.value = currentPart;
+      if (currentOperation) recordOperation.value = currentOperation;
+    } else {
+      // В обычном режиме просто обновляем списки
+      updateMachineOptions();
+      updatePartOptions();
+      updateOperationOptions();
     }
+    
+    updateTotalTime();
   }
 
   function updateShiftType() {
