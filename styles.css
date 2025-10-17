@@ -319,7 +319,7 @@ button.secondary:hover{
 }
 .op-row{
   display:grid;
-  grid-template-columns:1.5fr 1fr 1fr auto;
+  grid-template-columns:1.5fr 1fr 1fr 1fr auto;
   gap:12px;
   align-items:center;
   max-width:100%;

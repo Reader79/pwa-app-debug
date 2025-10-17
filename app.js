@@ -196,11 +196,35 @@ document.addEventListener('DOMContentLoaded', () => {
       extraTimeWrap.appendChild(extraTimeLabel); extraTimeWrap.appendChild(extraTime);
       extraTime.addEventListener('input', () => { op.extraTime = Number(extraTime.value||0); saveState(); });
       
+      // Ячейка с суммой
+      const totalWrap = document.createElement('div'); totalWrap.className='field-inline';
+      const totalLabel = document.createElement('label'); totalLabel.textContent='Итого (мин)';
+      const totalDisplay = document.createElement('div'); 
+      totalDisplay.style.padding = '12px';
+      totalDisplay.style.background = 'var(--card)';
+      totalDisplay.style.border = '1px solid rgba(255,255,255,0.1)';
+      totalDisplay.style.borderRadius = 'var(--border-radius-sm)';
+      totalDisplay.style.fontWeight = '600';
+      totalDisplay.style.color = 'var(--primary)';
+      totalDisplay.style.textAlign = 'center';
+      totalWrap.appendChild(totalLabel); totalWrap.appendChild(totalDisplay);
+      
+      // Функция обновления суммы
+      const updateTotal = () => {
+        const machine = Number(machineTime.value||0);
+        const extra = Number(extraTime.value||0);
+        totalDisplay.textContent = machine + extra;
+      };
+      
+      machineTime.addEventListener('input', updateTotal);
+      extraTime.addEventListener('input', updateTotal);
+      updateTotal(); // Инициализация
+      
       const del = document.createElement('button'); del.type='button'; del.className='icon-only'; del.title='Удалить операцию';
       del.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M9 3a1 1 0 0 0-1 1v1H5v2h14V5h-3V4a1 1 0 0 0-1-1H9Zm-3 6h12l-1 9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2l-1-9Zm4 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/></svg>';
       del.addEventListener('click', () => { part.operations.splice(oIndex,1); saveState(); renderOperations(); });
       
-      row.appendChild(opNameWrap); row.appendChild(machineTimeWrap); row.appendChild(extraTimeWrap); row.appendChild(del);
+      row.appendChild(opNameWrap); row.appendChild(machineTimeWrap); row.appendChild(extraTimeWrap); row.appendChild(totalWrap); row.appendChild(del);
       operationsContainer.appendChild(row);
     });
     
