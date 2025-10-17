@@ -125,14 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentPart = recordPart.value;
       const currentOperation = recordOperation.value;
       
-      // Обновляем списки
+      // Обновляем станки
       updateMachineOptions();
-      updatePartOptions();
-      updateOperationOptions();
-      
-      // Восстанавливаем выбранные значения
       if (currentMachine) recordMachine.value = currentMachine;
+      
+      // Обновляем детали, сохраняя выбранную
+      updatePartOptions();
       if (currentPart) recordPart.value = currentPart;
+      
+      // Обновляем операции, сохраняя выбранную
+      updateOperationOptions();
       if (currentOperation) recordOperation.value = currentOperation;
     } else {
       // В обычном режиме просто обновляем списки
