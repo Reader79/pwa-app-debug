@@ -256,11 +256,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // ТЕПЕРЬ открываем диалог (поля уже заполнены)
     openAddRecordDialog(date, true); // true = режим редактирования
     
-    // Обновляем опции после открытия диалога
+    // Обновляем опции после открытия диалога, сохраняя выбранные значения
     setTimeout(() => {
+      // Сохраняем текущие значения
+      const currentMachine = recordMachine.value;
+      const currentPart = recordPart.value;
+      const currentOperation = recordOperation.value;
+      
+      // Обновляем опции
       updateMachineOptions();
       updatePartOptions();
       updateOperationOptions();
+      
+      // Восстанавливаем выбранные значения
+      if (currentMachine) recordMachine.value = currentMachine;
+      if (currentPart) recordPart.value = currentPart;
+      if (currentOperation) recordOperation.value = currentOperation;
+      
       updateTotalTime();
     }, 50);
   };
