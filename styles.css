@@ -368,73 +368,106 @@ button.secondary:hover{
   border-collapse: collapse;
   margin: 16px 0;
   background: var(--card);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-soft);
-  font-size: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 0.7rem;
+  table-layout: fixed;
 }
 
 .results-table th {
-  background: var(--gradient-primary);
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
   color: white;
-  padding: 8px 12px;
-  text-align: left;
+  padding: 6px 4px;
+  text-align: center;
   font-weight: 600;
-  font-size: 0.75rem;
-  white-space: nowrap;
+  font-size: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .results-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 0.75rem;
-  white-space: nowrap;
+  padding: 6px 4px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  font-size: 0.65rem;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.5);
 }
 
 .results-table tr:last-child td {
-  border-bottom: none;
   font-weight: 600;
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.3);
   color: #ffffff !important;
 }
 
 .results-table tr:hover {
-  background: var(--card-elevated);
+  background: rgba(148, 163, 184, 0.1);
 }
+
+/* Фиксированные ширины колонок для мобильных */
+.results-table th:nth-child(1),
+.results-table td:nth-child(1) { width: 15%; } /* Деталь */
+.results-table th:nth-child(2),
+.results-table td:nth-child(2) { width: 15%; } /* Операция */
+.results-table th:nth-child(3),
+.results-table td:nth-child(3) { width: 12%; } /* Машинное время */
+.results-table th:nth-child(4),
+.results-table td:nth-child(4) { width: 12%; } /* Доп. время */
+.results-table th:nth-child(5),
+.results-table td:nth-child(5) { width: 10%; } /* Количество */
+.results-table th:nth-child(6),
+.results-table td:nth-child(6) { width: 15%; } /* Общее время */
+.results-table th:nth-child(7),
+.results-table td:nth-child(7) { width: 12%; } /* Коэффициент */
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
   .results-table {
-    font-size: 0.7rem;
-    overflow-x: auto;
-    display: block;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
+    font-size: 0.6rem;
+    width: 100%;
+    table-layout: fixed;
   }
   
   .results-table th,
   .results-table td {
-    padding: 6px 8px;
-    font-size: 0.7rem;
-    min-width: 50px;
+    padding: 4px 2px;
+    font-size: 0.6rem;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
-  .results-table th:first-child,
-  .results-table td:first-child {
-    min-width: 70px;
-  }
-  
-  /* Контейнер для горизонтальной прокрутки */
-  .results-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -16px;
-    padding: 0 16px;
-  }
+  /* Уменьшенные ширины для мобильных */
+  .results-table th:nth-child(1),
+  .results-table td:nth-child(1) { width: 12%; } /* Деталь */
+  .results-table th:nth-child(2),
+  .results-table td:nth-child(2) { width: 12%; } /* Операция */
+  .results-table th:nth-child(3),
+  .results-table td:nth-child(3) { width: 10%; } /* Машинное время */
+  .results-table th:nth-child(4),
+  .results-table td:nth-child(4) { width: 10%; } /* Доп. время */
+  .results-table th:nth-child(5),
+  .results-table td:nth-child(5) { width: 8%; } /* Количество */
+  .results-table th:nth-child(6),
+  .results-table td:nth-child(6) { width: 12%; } /* Общее время */
+  .results-table th:nth-child(7),
+  .results-table td:nth-child(7) { width: 10%; } /* Коэффициент */
   
   .summary-table {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    font-size: 0.7rem;
+  }
+  
+  .summary-table th,
+  .summary-table td {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+  
+  .coefficient,
+  .total-time {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-shadow: 0 0 4px currentColor, 0 1px 2px rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid currentColor;
+    padding: 6px 8px !important;
   }
 }
 
@@ -459,49 +492,58 @@ button.secondary:hover{
   background: linear-gradient(135deg, #0f172a, #1e293b);
   color: #ffffff;
   margin-top: 24px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(59, 130, 246, 0.3);
+  border: 2px solid rgba(59, 130, 246, 0.5);
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .summary-table th {
   background: linear-gradient(135deg, #1e40af, #3b82f6);
   font-weight: 700;
   color: #ffffff;
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
 }
 
 .summary-table td {
   font-weight: 700;
   text-align: center;
   color: #ffffff;
-  padding: 12px 16px;
-  font-size: 16px;
-  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.3);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
+
+/* Фиксированные ширины для итоговой таблицы */
+.summary-table th:nth-child(1),
+.summary-table td:nth-child(1) { width: 50%; } /* Общее время */
+.summary-table th:nth-child(2),
+.summary-table td:nth-child(2) { width: 50%; } /* Коэффициент */
 
 .coefficient {
   color: #fbbf24 !important;
   font-weight: 700;
-  font-size: 20px;
-  text-shadow: 0 0 6px rgba(251, 191, 36, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
-  background: rgba(251, 191, 36, 0.1) !important;
-  border-radius: 6px;
-  padding: 8px 12px !important;
+  font-size: 1rem;
+  text-shadow: 0 0 4px rgba(251, 191, 36, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
+  background: rgba(251, 191, 36, 0.2) !important;
+  border: 2px solid #fbbf24;
+  padding: 4px 8px !important;
 }
 
 .total-time {
   color: #34d399 !important;
   font-weight: 700;
-  font-size: 20px;
-  text-shadow: 0 0 6px rgba(52, 211, 153, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
-  background: rgba(52, 211, 153, 0.1) !important;
-  border-radius: 6px;
-  padding: 8px 12px !important;
+  font-size: 1rem;
+  text-shadow: 0 0 4px rgba(52, 211, 153, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
+  background: rgba(52, 211, 153, 0.2) !important;
+  border: 2px solid #34d399;
+  padding: 4px 8px !important;
 }
 
 /* Адаптивность для мобильных устройств */
