@@ -7,9 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const actionOne = document.getElementById('actionOne');
   const actionTwo = document.getElementById('actionTwo');
   const actionThree = document.getElementById('actionThree');
-  const refreshApp = document.getElementById('refreshApp');
-  const installApp = document.getElementById('installApp');
-  let deferredPrompt = null;
 
   // Settings elements
   const tabs = Array.from(document.querySelectorAll('.tab'));
@@ -355,21 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Действие 3: заглушка');
   });
 
-  // Refresh app: unregister SW, clear caches, reload
-  refreshApp?.addEventListener('click', async () => {
-    try{
-      if ('serviceWorker' in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister()));
-      }
-      if ('caches' in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map(k => caches.delete(k)));
-      }
-    } finally {
-      location.reload();
-    }
-  });
 
   // Register Service Worker
   if ('serviceWorker' in navigator) {
@@ -380,55 +362,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // PWA install flow
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('PWA: beforeinstallprompt event fired');
-    e.preventDefault();
-    deferredPrompt = e;
-    installApp.disabled = false;
-    installApp.textContent = 'Установить приложение';
-  });
-  
-  installApp?.addEventListener('click', async () => {
-    console.log('PWA: Install button clicked');
-    if (deferredPrompt) {
-      console.log('PWA: Using deferred prompt');
-      installApp.disabled = true;
-      try {
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        console.log('PWA: User choice:', choice.outcome);
-        if (choice.outcome === 'accepted') {
-          installApp.textContent = 'Установлено!';
-          installApp.disabled = true;
-        } else {
-          installApp.disabled = false;
-        }
-      } finally {
-        deferredPrompt = null;
-      }
-    } else {
-      console.log('PWA: No deferred prompt available');
-      // Проверяем, можно ли установить через другие способы
-      if (window.matchMedia('(display-mode: standalone)').matches) {
-        alert('Приложение уже установлено!');
-      } else {
-        alert('Для установки приложения:\n\nChrome/Edge: Меню (⋮) → "Установить приложение"\nSafari: Поделиться → "На экран Домой"\nFirefox: Меню → "Установить"');
-      }
-    }
-  });
-  
-  window.addEventListener('appinstalled', () => {
-    console.log('PWA: App installed successfully');
-    installApp.textContent = 'Установлено!';
-    installApp.disabled = true;
-    deferredPrompt = null;
-  });
-
-  // Диагностика PWA
-  console.log('PWA: Service Worker supported:', 'serviceWorker' in navigator);
-  console.log('PWA: Manifest loaded:', document.querySelector('link[rel="manifest"]')?.href);
-  console.log('PWA: Standalone mode:', window.matchMedia('(display-mode: standalone)').matches);
 
   // Init
   hydrateMain();
