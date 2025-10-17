@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v15';
+const CACHE_VERSION = 'v16';
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 const PRECACHE = `precache-${CACHE_VERSION}`;
 
@@ -27,13 +27,34 @@ self.addEventListener('activate', (event) => {
         if (![PRECACHE, RUNTIME_CACHE].includes(key)) return caches.delete(key);
       }));
       await self.clients.claim();
+      
       // Принудительно обновляем все клиенты
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
         client.postMessage({ type: 'SW_UPDATED' });
       });
+      
+      // Дополнительная проверка через 1 секунду
+      setTimeout(async () => {
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+          client.postMessage({ type: 'FORCE_RELOAD' });
+        });
+      }, 1000);
     })()
   );
+});
+
+// Слушаем сообщения от клиентов
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CHECK_UPDATE') {
+    // Принудительно обновляем кэш
+    event.waitUntil(
+      caches.open(PRECACHE).then(cache => {
+        return cache.addAll(ASSETS);
+      })
+    );
+  }
 });
 
 // Стратегии кэширования

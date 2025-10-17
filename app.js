@@ -939,28 +939,47 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.serviceWorker.register('./sw.js').then((registration) => {
         console.log('SW registered successfully');
         
+        // Принудительная проверка обновлений при загрузке
+        registration.update();
+        
         // Проверяем обновления при загрузке
         registration.addEventListener('updatefound', () => {
           console.log('New SW version found, updating...');
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'activated') {
-              console.log('New SW activated, reloading...');
-              location.reload();
+            if (newWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                console.log('New SW installed, reloading...');
+                window.location.reload();
+              } else {
+                console.log('SW installed for the first time');
+              }
             }
           });
         });
+        
+        // Слушаем сообщения от Service Worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'SW_UPDATED') {
+            console.log('SW update message received, reloading...');
+            window.location.reload();
+          }
+          if (event.data && event.data.type === 'FORCE_RELOAD') {
+            console.log('Force reload message received, reloading...');
+            window.location.reload();
+          }
+        });
+        
+        // Дополнительная проверка обновлений каждые 30 секунд
+        setInterval(() => {
+          if (navigator.serviceWorker.controller) {
+            registration.update();
+          }
+        }, 30000);
+        
       }).catch((err) => {
         console.warn('SW registration failed', err);
       });
-    });
-    
-    // Слушаем сообщения от Service Worker
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data && event.data.type === 'SW_UPDATED') {
-        console.log('Service Worker updated, reloading page...');
-        location.reload();
-      }
     });
   }
 
