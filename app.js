@@ -207,14 +207,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Функции для отображения результатов
   function showResults(date) {
+    console.log('showResults called with date:', date);
     const resultsSection = document.getElementById('resultsSection');
     const resultsTitle = document.getElementById('resultsTitle');
     const resultsContainer = document.getElementById('resultsContainer');
     
-    if (!resultsSection || !resultsTitle || !resultsContainer) return;
+    console.log('Elements found:', { resultsSection, resultsTitle, resultsContainer });
+    
+    if (!resultsSection || !resultsTitle || !resultsContainer) {
+      console.error('Required elements not found');
+      return;
+    }
+    
+    console.log('Looking for record with date:', date);
+    console.log('Available records:', state.records);
     
     const record = state.records.find(r => r.date === date);
+    console.log('Found record:', record);
+    
     if (!record) {
+      console.log('No record found, hiding results section');
       resultsSection.style.display = 'none';
       return;
     }
@@ -661,6 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Добавляем обработчик клика для показа результатов
       cell.addEventListener('click', () => {
         const dateString = date.toISOString().split('T')[0];
+        console.log('Clicked date:', dateString); // Отладка
         showResults(dateString);
       });
       
