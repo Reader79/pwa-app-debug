@@ -125,16 +125,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const part = state.parts[currentPartIndex];
     
     // Поле для редактирования названия детали
-    const nameRow = document.createElement('div'); nameRow.className='op-row';
-    const nameWrap = document.createElement('div'); nameWrap.className='field-inline';
-    const nameLabel = document.createElement('label'); nameLabel.textContent='Название детали';
+    const nameRow = document.createElement('div'); 
+    nameRow.style.marginBottom = '20px';
+    nameRow.style.padding = '16px';
+    nameRow.style.backgroundColor = '#1f2937';
+    nameRow.style.borderRadius = '8px';
+    nameRow.style.border = '1px solid #374151';
+    
+    const nameLabel = document.createElement('label'); 
+    nameLabel.textContent = 'Название детали:';
+    nameLabel.style.display = 'block';
+    nameLabel.style.marginBottom = '8px';
+    nameLabel.style.fontWeight = '600';
+    nameLabel.style.color = '#e5e7eb';
+    
     const nameInput = document.createElement('input'); 
-    nameInput.type='text'; 
-    nameInput.placeholder='Название детали'; 
+    nameInput.type = 'text'; 
+    nameInput.placeholder = 'Введите название детали'; 
     nameInput.value = part.name;
-    nameInput.style.fontWeight = 'bold';
+    nameInput.style.width = '100%';
+    nameInput.style.padding = '12px';
     nameInput.style.fontSize = '16px';
-    nameWrap.appendChild(nameLabel); nameWrap.appendChild(nameInput);
+    nameInput.style.fontWeight = 'bold';
+    nameInput.style.backgroundColor = '#0f172a';
+    nameInput.style.border = '1px solid #374151';
+    nameInput.style.borderRadius = '6px';
+    nameInput.style.color = '#e5e7eb';
+    
+    nameRow.appendChild(nameLabel);
+    nameRow.appendChild(nameInput);
+    
     nameInput.addEventListener('input', () => { 
       part.name = nameInput.value; 
       saveState(); 
@@ -143,15 +163,18 @@ document.addEventListener('DOMContentLoaded', () => {
       // Обновляем список деталей
       renderParts();
     });
-    nameRow.appendChild(nameWrap);
+    
     operationsContainer.appendChild(nameRow);
     
-    // Разделитель
-    const separator = document.createElement('div'); 
-    separator.style.height = '1px'; 
-    separator.style.backgroundColor = '#1f2937'; 
-    separator.style.margin = '16px 0';
-    operationsContainer.appendChild(separator);
+    // Заголовок для операций
+    const operationsHeader = document.createElement('div');
+    operationsHeader.style.marginTop = '24px';
+    operationsHeader.style.marginBottom = '16px';
+    operationsHeader.style.fontSize = '18px';
+    operationsHeader.style.fontWeight = '600';
+    operationsHeader.style.color = '#e5e7eb';
+    operationsHeader.textContent = 'Операции:';
+    operationsContainer.appendChild(operationsHeader);
     
     part.operations.forEach((op, oIndex) => {
       const row = document.createElement('div'); row.className='op-row';
