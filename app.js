@@ -319,8 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
       machineGroups[entry.machine].push(entry);
     });
     
-    // Создание карточек для каждого станка
-    Object.keys(machineGroups).forEach(machine => {
+    // Создание карточек для каждого станка (сортировка по алфавиту)
+    const sortedMachines = Object.keys(machineGroups).sort((a, b) => a.localeCompare(b, 'ru'));
+    sortedMachines.forEach(machine => {
       const machineCard = document.createElement('div');
       machineCard.className = 'machine-card';
       
