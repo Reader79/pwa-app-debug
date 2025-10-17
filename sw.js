@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v14';
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 const PRECACHE = `precache-${CACHE_VERSION}`;
 

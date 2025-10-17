@@ -1045,11 +1045,18 @@ document.addEventListener('DOMContentLoaded', () => {
       entries: [...currentEntries]
     };
     
-    // Удаляем старую запись на эту дату, если есть
-    state.records = state.records.filter(r => r.date !== date);
+    // Проверяем, есть ли уже запись на эту дату
+    const existingRecordIndex = state.records.findIndex(r => r.date === date);
     
-    // Добавляем новую запись
-    state.records.push(record);
+    if (existingRecordIndex !== -1) {
+      // Если запись уже существует, добавляем новые записи к существующим
+      state.records[existingRecordIndex].entries.push(...currentEntries);
+      console.log('Добавлены записи к существующей смене:', state.records[existingRecordIndex]);
+    } else {
+      // Если записи нет, добавляем новую запись
+      state.records.push(record);
+      console.log('Создана новая запись:', record);
+    }
     saveState();
     
     alert('Запись сохранена');
