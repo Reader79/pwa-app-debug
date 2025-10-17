@@ -345,7 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function formatDate(dateString) {
-    const date = new Date(dateString);
+    // Парсим дату без учета часового пояса
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     return date.toLocaleDateString('ru-RU', { 
       day: '2-digit', 
       month: '2-digit', 
@@ -679,7 +681,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Добавляем обработчик клика для выбора даты
       cell.addEventListener('click', () => {
-        const dateString = date.toISOString().split('T')[0];
+        // Исправляем проблему с часовыми поясами
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
         selectedDate = dateString;
         console.log('Selected date:', dateString);
         
