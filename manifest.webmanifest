@@ -2,8 +2,8 @@
   "name": "PWA приложение для управления сменами",
   "short_name": "PWA Смены",
   "description": "Приложение для управления рабочими сменами и календарем",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/pwa-app/",
+  "scope": "/pwa-app/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b1220",
@@ -12,7 +12,7 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "./assets/icons/icon.svg",
+      "src": "/pwa-app/assets/icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
