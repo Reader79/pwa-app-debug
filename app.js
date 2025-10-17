@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="data-row">
             <span class="data-label">Общее время:</span>
-            <span class="data-value">${entry.totalTime} мин</span>
+            <span class="data-value">${entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity} мин</span>
           </div>
           <div class="data-row">
             <span class="data-label">Коэффициент:</span>
@@ -429,7 +429,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Итоговая таблица
-    const totalTime = record.entries.reduce((sum, entry) => sum + entry.totalTime, 0);
+    const totalTime = record.entries.reduce((sum, entry) => {
+      const entryTotalTime = entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+      return sum + entryTotalTime;
+    }, 0);
     const totalCoefficient = calculateCoefficient(totalTime, state.main.baseTime);
     
     const summaryDiv = document.createElement('div');
@@ -1142,13 +1145,19 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Создаем запись из текущих полей
     const part = state.parts.find(p => p.id === recordPart.value);
+    const machineTime = parseInt(recordMachineTime.value) || 0;
+    const extraTime = parseInt(recordExtraTime.value) || 0;
+    const quantity = parseInt(recordQuantity.value) || 0;
+    const totalTime = calculateTotalTime(machineTime, extraTime, quantity);
+    
     const newEntry = {
       machine: recordMachine.value,
       part: part.name,
       operation: recordOperation.value,
-      machineTime: parseInt(recordMachineTime.value) || 0,
-      extraTime: parseInt(recordExtraTime.value) || 0,
-      quantity: parseInt(recordQuantity.value) || 0
+      machineTime: machineTime,
+      extraTime: extraTime,
+      quantity: quantity,
+      totalTime: totalTime
     };
     
     // Проверяем режим редактирования
