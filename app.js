@@ -384,25 +384,35 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installApp.style.display = 'inline-block';
+    // Кнопка уже видна, просто активируем её
+    installApp.disabled = false;
   });
+  
   installApp?.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-    installApp.disabled = true;
-    try {
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        installApp.style.display = 'none';
-      } else {
-        installApp.disabled = false;
+    if (deferredPrompt) {
+      // Используем стандартный prompt
+      installApp.disabled = true;
+      try {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          installApp.textContent = 'Установлено!';
+          installApp.disabled = true;
+        } else {
+          installApp.disabled = false;
+        }
+      } finally {
+        deferredPrompt = null;
       }
-    } finally {
-      deferredPrompt = null;
+    } else {
+      // Fallback для браузеров без beforeinstallprompt
+      alert('Для установки приложения:\n\nChrome/Edge: Меню (⋮) → "Установить приложение"\nSafari: Поделиться → "На экран Домой"\nFirefox: Меню → "Установить"');
     }
   });
+  
   window.addEventListener('appinstalled', () => {
-    installApp.style.display = 'none';
+    installApp.textContent = 'Установлено!';
+    installApp.disabled = true;
     deferredPrompt = null;
   });
 
