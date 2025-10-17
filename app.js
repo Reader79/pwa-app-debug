@@ -297,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     saveState();
+    renderCalendar(); // Обновляем календарь для индикаторов статуса
     showResults(date); // Обновляем отображение
   };
 
@@ -1231,6 +1232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     saveState();
     alert('Запись сохранена');
     addRecordDialog.close();
+    
+    // Обновляем календарь для обновления индикаторов статуса
+    renderCalendar();
     
     // Обновляем отображение результатов
     if (selectedDate) {
