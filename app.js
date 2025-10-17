@@ -116,11 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
       recordDate.value = new Date().toISOString().split('T')[0];
     }
     
-    updateShiftType();
-    updateMachineOptions();
-    updatePartOptions();
-    updateOperationOptions();
-    updateTotalTime();
+    // В режиме редактирования НЕ обновляем опции, чтобы не очистить заполненные поля
+    if (!isEditMode) {
+      updateShiftType();
+      updateMachineOptions();
+      updatePartOptions();
+      updateOperationOptions();
+      updateTotalTime();
+    }
   }
 
   function updateShiftType() {
@@ -256,25 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ТЕПЕРЬ открываем диалог (поля уже заполнены)
     openAddRecordDialog(date, true); // true = режим редактирования
     
-    // Обновляем опции после открытия диалога, сохраняя выбранные значения
-    setTimeout(() => {
-      // Сохраняем текущие значения
-      const currentMachine = recordMachine.value;
-      const currentPart = recordPart.value;
-      const currentOperation = recordOperation.value;
-      
-      // Обновляем опции
-      updateMachineOptions();
-      updatePartOptions();
-      updateOperationOptions();
-      
-      // Восстанавливаем выбранные значения
-      if (currentMachine) recordMachine.value = currentMachine;
-      if (currentPart) recordPart.value = currentPart;
-      if (currentOperation) recordOperation.value = currentOperation;
-      
-      updateTotalTime();
-    }, 50);
+    // Обновляем только общее время, так как опции не обновляются в режиме редактирования
+    updateTotalTime();
   };
   
   window.deleteEntry = function(date, entryIndex) {
