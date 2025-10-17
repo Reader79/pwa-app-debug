@@ -1,0 +1,17 @@
+{
+  "name": "pwa-shift-manager",
+  "version": "1.0.0",
+  "description": "PWA приложение для управления рабочими сменами",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -c-1",
+    "build": "echo 'No build step required'",
+    "dev": "npx http-server . -p 3000 -c-1"
+  },
+  "keywords": ["pwa", "shifts", "calendar", "management"],
+  "author": "Reader79",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
