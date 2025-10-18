@@ -1172,7 +1172,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const addRecordFromCalendar = document.getElementById('addRecordFromCalendar');
   addRecordFromCalendar?.addEventListener('click', () => {
     if (selectedDate) {
-      openAddRecordDialog(selectedDate);
+      const shiftType = getShiftType(new Date(selectedDate));
+      
+      if (shiftType === 'O') {
+        // Показываем диалог подтверждения подработки
+        showOvertimeDialog();
+      } else {
+        // Если не выходной день, открываем диалог сразу
+        openAddRecordDialog(selectedDate);
+      }
     }
   });
   closeAddRecord?.addEventListener('click', () => addRecordDialog.close());
@@ -1188,8 +1196,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   confirmOvertime?.addEventListener('click', () => {
     overtimeDialog.close();
-    // Продолжаем сохранение записи
-    saveRecordEntry();
+    // Открываем диалог добавления записи
+    if (selectedDate) {
+      openAddRecordDialog(selectedDate);
+    }
   });
   
   recordDate?.addEventListener('change', updateShiftType);
@@ -1290,16 +1300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Обработчик кнопки "Сохранить"
   saveRecord?.addEventListener('click', () => {
-    const date = recordDate.value;
-    const shiftType = getShiftType(new Date(date));
-    
-    if (shiftType === 'O') {
-      // Показываем диалог подтверждения подработки
-      showOvertimeDialog();
-      return;
-    }
-    
-    // Если не выходной день, сохраняем сразу
+    // Сохраняем запись (проверка выходного дня уже была при открытии диалога)
     saveRecordEntry();
   });
 
