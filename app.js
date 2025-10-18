@@ -487,25 +487,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
     // Рассчитываем позиции границ градиента на основе реальных значений
-    // SVG-градиент идет снизу вверх (y1="100%" y2="0%")
-    // 0.0 = 0% (низ), maxY = 100% (верх) в градиенте
-    const redZoneEnd = Math.min((0.8 / maxY) * 100, 100); // 0.8 коэффициент
-    const yellowZoneEnd = Math.min((1.1 / maxY) * 100, 100); // 1.1 коэффициент
+    // Градиент идет СВЕРХУ ВНИЗ: y1="0%" (maxY) -> y2="100%" (0.0)
+    // Инвертируем расчет: чем выше значение, тем ближе к 0% (верх)
+    const greenBottomPercent = 100 - Math.min((1.1 / maxY) * 100, 100); // Низ зеленой зоны (1.1)
+    const yellowBottomPercent = 100 - Math.min((0.8 / maxY) * 100, 100); // Низ желтой зоны (0.8)
     
     // Применяем динамический градиент через SVG (работает на всех устройствах)
-    const redStop = document.getElementById('redStop');
-    const yellowStart = document.getElementById('yellowStart');
-    const yellowStop = document.getElementById('yellowStop');
-    const greenStart = document.getElementById('greenStart');
+    const greenBottom = document.getElementById('greenBottom');
+    const yellowTop = document.getElementById('yellowTop');
+    const yellowBottom = document.getElementById('yellowBottom');
+    const redTop = document.getElementById('redTop');
     
-    if (redStop && yellowStart && yellowStop && greenStart) {
-      // SVG offset: 0% = снизу (y1), 100% = сверху (y2)
-      redStop.setAttribute('offset', `${redZoneEnd}%`);
-      yellowStart.setAttribute('offset', `${redZoneEnd}%`);
-      yellowStop.setAttribute('offset', `${yellowZoneEnd}%`);
-      greenStart.setAttribute('offset', `${yellowZoneEnd}%`);
+    if (greenBottom && yellowTop && yellowBottom && redTop) {
+      // offset: 0% = верх графика (maxY), 100% = низ графика (0)
+      greenBottom.setAttribute('offset', `${greenBottomPercent}%`);
+      yellowTop.setAttribute('offset', `${greenBottomPercent}%`);
+      yellowBottom.setAttribute('offset', `${yellowBottomPercent}%`);
+      redTop.setAttribute('offset', `${yellowBottomPercent}%`);
       
-      console.log(`Градиент: maxY=${maxY.toFixed(2)}, red=0-${redZoneEnd.toFixed(1)}%, yellow=${redZoneEnd.toFixed(1)}-${yellowZoneEnd.toFixed(1)}%, green=${yellowZoneEnd.toFixed(1)}-100%`);
+      console.log(`Градиент: maxY=${maxY.toFixed(2)}, green=0-${greenBottomPercent.toFixed(1)}%, yellow=${greenBottomPercent.toFixed(1)}-${yellowBottomPercent.toFixed(1)}%, red=${yellowBottomPercent.toFixed(1)}-100%`);
     }
     
     // Создаем подписи для оси Y (слева от графика) - синхронизированы с сеткой
