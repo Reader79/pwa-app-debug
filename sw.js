@@ -47,12 +47,15 @@ self.addEventListener('activate', (event) => {
 
 // Слушаем сообщения от клиентов
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'CHECK_UPDATE') {
-    // Принудительно обновляем кэш
+  const msg = event.data || {};
+  if (msg.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+  if (msg.type === 'CHECK_UPDATE') {
+    // Принудительно обновляем кэш предзагруженных ресурсов
     event.waitUntil(
-      caches.open(PRECACHE).then(cache => {
-        return cache.addAll(ASSETS);
-      })
+      caches.open(PRECACHE).then(cache => cache.addAll(ASSETS))
     );
   }
 });

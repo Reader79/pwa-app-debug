@@ -2028,51 +2028,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Register Service Worker
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').then((registration) => {
+    window.addEventListener('load', async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('./sw.js?v=2025-10-18', {
+          updateViaCache: 'none'
+        });
         console.log('SW registered successfully');
-        
-        // Принудительная проверка обновлений при загрузке
-        registration.update();
-        
-        // Проверяем обновления при загрузке
+
+        // Моментально активируем новое обновление, как только оно установилось
         registration.addEventListener('updatefound', () => {
-          console.log('New SW version found, updating...');
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed') {
+          const sw = registration.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed') {
+              // Если уже есть контроллер, значит это обновление
               if (navigator.serviceWorker.controller) {
-                console.log('New SW installed, reloading...');
-                window.location.reload();
-              } else {
-                console.log('SW installed for the first time');
+                registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
               }
             }
           });
         });
-        
-        // Слушаем сообщения от Service Worker
+
+        // Перезагружаем вкладку, когда новый SW берёт контроль
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        });
+
+        // Триггеры проверки обновлений
+        const askUpdate = () => registration.update();
+        window.addEventListener('focus', askUpdate);
+        window.addEventListener('online', askUpdate);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') askUpdate();
+        });
+        setInterval(askUpdate, 5 * 60 * 1000);
+
+        // Сообщения от SW как запасной канал
         navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data && event.data.type === 'SW_UPDATED') {
-            console.log('SW update message received, reloading...');
-            window.location.reload();
-          }
-          if (event.data && event.data.type === 'FORCE_RELOAD') {
-            console.log('Force reload message received, reloading...');
+          const msg = event.data || {};
+          if (msg.type === 'SW_UPDATED' || msg.type === 'FORCE_RELOAD') {
             window.location.reload();
           }
         });
-        
-        // Дополнительная проверка обновлений каждые 30 секунд
-        setInterval(() => {
-          if (navigator.serviceWorker.controller) {
-            registration.update();
-          }
-        }, 30000);
-        
-      }).catch((err) => {
+
+        // Принудительная первичная проверка
+        askUpdate();
+      } catch (err) {
         console.warn('SW registration failed', err);
-      });
+      }
     });
   }
 
