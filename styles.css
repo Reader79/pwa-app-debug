@@ -251,12 +251,11 @@ body{
 }
 
 .chart-labels {
-  position: relative;
-  padding: 8px 0 0 0;
-  width: 100%;
+  position: absolute; /* Привязка к области графика */
+  left: 0;
+  right: 0;
+  bottom: -24px; /* располагем подписи непосредственно под областью графика */
   height: 20px;
-  margin-left: 0; /* УБРАН отступ - подписи должны точно совпадать с точками */
-  margin-right: 0;
 }
 
 .chart-label {
@@ -315,8 +314,9 @@ body{
   }
   
   .chart-labels {
-    margin-left: 0; /* УБРАН отступ для мобильных */
-    margin-right: 0;
+    left: 0;
+    right: 0;
+    bottom: -22px;
   }
 }
 
