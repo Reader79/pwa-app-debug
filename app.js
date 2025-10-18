@@ -491,18 +491,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const redZoneEnd = Math.min((0.8 / maxY) * 100, 100); // 0.8 коэффициент
     const yellowZoneEnd = Math.min((1.1 / maxY) * 100, 100); // 1.1 коэффициент
     
-    // Применяем динамический градиент к области графика
-    const chartArea = document.querySelector('.chart-area');
+    // Применяем динамический градиент к области графика через CSS-переменные
+    // Это работает надежнее на мобильных устройствах
+    const chartArea = chartGridContainer.closest('.chart-area');
     if (chartArea) {
-      const gradient = `linear-gradient(to top,
-        rgba(255, 153, 153, 0.3) 0%,
-        rgba(255, 153, 153, 0.3) ${redZoneEnd}%,
-        rgba(255, 255, 153, 0.3) ${redZoneEnd}%,
-        rgba(255, 255, 153, 0.3) ${yellowZoneEnd}%,
-        rgba(153, 255, 153, 0.3) ${yellowZoneEnd}%,
-        rgba(153, 255, 153, 0.3) 100%
-      )`;
-      chartArea.style.background = gradient;
+      chartArea.style.setProperty('--red-zone-end', `${redZoneEnd}%`);
+      chartArea.style.setProperty('--yellow-zone-end', `${yellowZoneEnd}%`);
     }
     
     // Создаем подписи для оси Y (слева от графика) - синхронизированы с сеткой
