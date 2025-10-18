@@ -438,7 +438,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Рассчитываем коэффициент выработки
     const baseTime = state.main.baseTime || 600;
     const expectedTime = totalWorkDays * baseTime;
-    const efficiencyCoefficient = expectedTime > 0 ? (totalWorkTime / expectedTime) : 0;
+    
+    // Для будущих месяцев коэффициент должен быть 0
+    let efficiencyCoefficient = 0;
+    if (expectedTime > 0) {
+      efficiencyCoefficient = totalWorkTime / expectedTime;
+    } else if (totalWorkDays === 0) {
+      // Если нет рабочих дней (будущий месяц), коэффициент = 0
+      efficiencyCoefficient = 0;
+    }
     
     return `
       <div class="machine-card">
