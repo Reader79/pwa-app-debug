@@ -388,8 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxCoefficient = Math.max(...coefficients, 1);
     const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
-    // Создаем подписи для оси Y (коэффициенты) - адаптивные значения
-    const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY];
+    // Создаем подписи для оси Y (коэффициенты) - адаптивные значения снизу вверх
+    const yLabels = [maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0]; // ИСПРАВЛЕНО: порядок снизу вверх
     yLabels.forEach(value => {
       const label = document.createElement('div');
       label.className = 'chart-y-label';
