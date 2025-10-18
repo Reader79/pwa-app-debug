@@ -393,19 +393,25 @@ document.addEventListener('DOMContentLoaded', () => {
       workDays++;
     });
     
-    // Подсчитываем количество смен в месяце
-    let shiftsInMonth = 0;
+    // Получаем текущую дату
+    const today = new Date();
+    const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    // Подсчитываем количество рабочих дней до текущей даты
+    let totalWorkDays = 0;
     for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
       const date = new Date(year, month - 1, day);
       const shiftType = getShiftType(date);
-      if (shiftType === 'D' || shiftType === 'N') {
-        shiftsInMonth++;
+      
+      // Учитываем только рабочие дни до текущей даты
+      if ((shiftType === 'D' || shiftType === 'N') && date <= currentDate) {
+        totalWorkDays++;
       }
     }
     
     // Рассчитываем коэффициент выработки
     const baseTime = state.main.baseTime || 600;
-    const expectedTime = shiftsInMonth * baseTime;
+    const expectedTime = totalWorkDays * baseTime;
     const efficiencyCoefficient = expectedTime > 0 ? (totalWorkTime / expectedTime) : 0;
     
     return `
@@ -419,8 +425,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="data-value">${workDays}</span>
               </div>
               <div class="data-row">
-                <span class="data-label">Всего смен в месяце:</span>
-                <span class="data-value">${shiftsInMonth}</span>
+                <span class="data-label">Рабочих дней до текущей даты:</span>
+                <span class="data-value">${totalWorkDays}</span>
               </div>
               <div class="data-row">
                 <span class="data-label">Общее время работы:</span>
