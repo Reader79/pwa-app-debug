@@ -396,6 +396,13 @@ document.addEventListener('DOMContentLoaded', () => {
       workDays++;
     });
     
+    // Для прошлых месяцев добавляем время за дни без записей (коэффициент 1.0)
+    if (!isCurrentMonth) {
+      const daysWithRecords = new Set(monthRecords.map(record => record.date));
+      const daysWithoutRecords = totalWorkDays - workDays;
+      totalWorkTime += daysWithoutRecords * (state.main.baseTime || 600);
+    }
+    
     // Получаем текущую дату
     const today = new Date();
     const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
