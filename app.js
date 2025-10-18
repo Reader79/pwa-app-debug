@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Создаем сетку
-    // Горизонтальные линии
+    // Горизонтальные линии (для коэффициентов по Y)
     for (let i = 0; i <= 4; i++) {
       const line = document.createElement('div');
       line.className = 'chart-grid-line horizontal';
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
       chartGridContainer.appendChild(line);
     }
     
-    // Вертикальные линии (для каждого рабочего дня)
+    // Вертикальные линии (для дней по X)
     workDays.forEach((day, index) => {
       const line = document.createElement('div');
       line.className = 'chart-grid-line vertical';
@@ -440,9 +440,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = dailyData[day];
       const coefficient = data.coefficient;
       
-      // Рассчитываем позицию точки
-      const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50;
-      const y = 100 - (coefficient / maxY) * 100; // 0 снизу, максимальное значение сверху
+      // ИСПРАВЛЕНО: правильные позиции точек
+      const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50; // Дни по X (горизонтально)
+      const y = 100 - (coefficient / maxY) * 100; // Коэффициенты по Y (вертикально, 0 снизу)
       
       points.push({ x, y, day, data, coefficient });
       
