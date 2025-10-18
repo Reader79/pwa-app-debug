@@ -251,29 +251,27 @@ body{
 }
 
 .chart-labels {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
   padding: 8px 0 0 0;
-  gap: 2px;
   width: 100%;
-  align-items: center;
+  height: 20px;
   margin-left: 40px; /* Отступ слева для выравнивания с областью графика */
   margin-right: 8px; /* Отступ справа */
 }
 
 .chart-label {
-  flex: 1;
+  position: absolute;
+  top: 0;
   text-align: center;
   font-size: 10px;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
-  min-width: 0;
-  overflow: hidden;
   padding: 2px 4px;
   border-radius: 2px;
   background: rgba(0, 0, 0, 0.3);
-  max-width: 20px; /* Ограничение ширины для предотвращения наложения */
   white-space: nowrap;
+  min-width: 20px;
+  transform: translateX(-50%); /* Центрирование относительно точки */
 }
 
 /* Адаптивность для мобильных устройств */

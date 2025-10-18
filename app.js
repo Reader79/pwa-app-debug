@@ -482,26 +482,25 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней (по оси X) - через один день
+    // Создаем подписи дней (по оси X) - точное позиционирование под точками
     workDays.forEach((day, index) => {
       const label = document.createElement('div');
       label.className = 'chart-label';
       label.textContent = day;
-      label.style.flex = '1';
+      label.style.position = 'absolute';
+      label.style.left = workDays.length > 1 ? `${(index / (workDays.length - 1)) * 100}%` : '50%';
+      label.style.transform = 'translateX(-50%)'; // Центрирование относительно точки
       label.style.textAlign = 'center';
+      label.style.fontSize = '10px';
+      label.style.color = 'rgba(255, 255, 255, 0.6)';
+      label.style.fontWeight = '500';
+      label.style.padding = '2px 4px';
+      label.style.borderRadius = '2px';
+      label.style.background = 'rgba(0, 0, 0, 0.3)';
+      label.style.whiteSpace = 'nowrap';
+      label.style.minWidth = '20px';
       
-      // Показываем только каждый второй день для лучшей читаемости
-      if (index % 2 === 0) {
-        labelsContainer.appendChild(label);
-      } else {
-        // Добавляем пустой элемент для выравнивания
-        const emptyLabel = document.createElement('div');
-        emptyLabel.className = 'chart-label';
-        emptyLabel.style.flex = '1';
-        emptyLabel.style.textAlign = 'center';
-        emptyLabel.style.visibility = 'hidden';
-        labelsContainer.appendChild(emptyLabel);
-      }
+      labelsContainer.appendChild(label);
     });
   }
 
