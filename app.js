@@ -399,9 +399,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
     svg.style.position = 'absolute';
     svg.style.top = '0';
     svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
     
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('stroke', '#22c55e');
@@ -441,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pointElement.className = 'chart-point';
       pointElement.style.left = `${point.x}%`;
       pointElement.style.top = `${point.y}%`;
+      pointElement.style.position = 'absolute';
       
       // Добавляем классы в зависимости от состояния
       if (point.data.isFuture) {
