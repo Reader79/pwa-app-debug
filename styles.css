@@ -89,6 +89,19 @@ body{
   margin-right: 8px;
   vertical-align: middle;
 }
+
+/* Версия приложения */
+.version-info {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+  z-index: 1000;
+  pointer-events: none;
+  user-select: none;
+}
 button.primary,button.secondary{
   appearance:none;
   border:0;
