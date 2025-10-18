@@ -313,166 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Функция для создания графика коэффициента выработки
-  function createEfficiencyChart() {
-    const yAxisContainer = document.getElementById('chartYAxis');
-    const chartLineContainer = document.getElementById('chartLine');
-    const chartPointsContainer = document.getElementById('chartPoints');
-    const labelsContainer = document.getElementById('chartLabels');
-    
-    if (!yAxisContainer || !chartLineContainer || !chartPointsContainer || !labelsContainer) return;
-    
-    // Получаем текущий месяц
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1;
-    
-    // Получаем все записи за текущий месяц
-    const monthRecords = state.records.filter(record => {
-      const recordYear = parseInt(record.date.split('-')[0]);
-      const recordMonth = parseInt(record.date.split('-')[1]);
-      return recordYear === currentYear && recordMonth === currentMonth;
-    });
-    
-    // Создаем объект для хранения данных по дням
-    const dailyData = {};
-    
-    // Инициализируем все дни месяца
-    const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentYear, currentMonth - 1, day);
-      const shiftType = getShiftType(date);
-      
-      // Учитываем только рабочие дни
-      if (shiftType === 'D' || shiftType === 'N') {
-        const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        dailyData[day] = {
-          date: dateString,
-          isWorkDay: true,
-          isPast: date <= today,
-          isFuture: date > today,
-          workTime: 0,
-          coefficient: 0
-        };
-      }
-    }
-    
-    // Заполняем данные из записей
-    monthRecords.forEach(record => {
-      const day = parseInt(record.date.split('-')[2]);
-      if (dailyData[day]) {
-        let dayWorkTime = 0;
-        record.entries.forEach(entry => {
-          dayWorkTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
-        });
-        dailyData[day].workTime = dayWorkTime;
-        
-        // Рассчитываем коэффициент для дня
-        const baseTime = state.main.baseTime || 600;
-        dailyData[day].coefficient = dayWorkTime / baseTime;
-      }
-    });
-    
-    // Генерируем HTML для графика
-    yAxisContainer.innerHTML = '';
-    chartLineContainer.innerHTML = '';
-    chartPointsContainer.innerHTML = '';
-    labelsContainer.innerHTML = '';
-    
-    const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
-    
-    // Исправляем расчет максимального коэффициента
-    const coefficients = workDays.map(day => dailyData[day].coefficient);
-    const maxCoefficient = Math.max(...coefficients, 1); // Минимум 1 для избежания деления на 0
-    
-    // Создаем подписи для оси Y (динамически на основе данных)
-    const maxY = Math.ceil(maxCoefficient + 0.5); // Максимальный показатель + 0.5
-    const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY]; // ИСПРАВЛЕНО: от 0 снизу вверх
-    yLabels.forEach(value => {
-      const label = document.createElement('div');
-      label.className = 'chart-y-label';
-      label.textContent = value.toFixed(1);
-      yAxisContainer.appendChild(label);
-    });
-    
-    // Создаем SVG для линии графика
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '100%');
-    svg.setAttribute('height', '100%');
-    svg.setAttribute('viewBox', '0 0 100 100');
-    svg.setAttribute('preserveAspectRatio', 'none');
-    svg.style.position = 'absolute';
-    svg.style.top = '0';
-    svg.style.left = '0';
-    svg.style.width = '100%';
-    svg.style.height = '100%';
-    
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('stroke', '#22c55e');
-    path.setAttribute('stroke-width', '2');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-linecap', 'round');
-    path.setAttribute('stroke-linejoin', 'round');
-    
-    let pathData = '';
-    const points = [];
-    
-    workDays.forEach((day, index) => {
-      const data = dailyData[day];
-      const coefficient = data.coefficient;
-      
-      // Исправляем расчет позиции точки
-      const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50; // Если один день - по центру
-      const y = 100 - (coefficient / maxY) * 100; // ИСПРАВЛЕНО: инверсия для правильного отображения (0 снизу)
-      
-      points.push({ x, y, day, data, coefficient });
-      
-      // Добавляем точку в путь
-      if (index === 0) {
-        pathData += `M ${x} ${y}`;
-      } else {
-        pathData += ` L ${x} ${y}`;
-      }
-    });
-    
-    path.setAttribute('d', pathData);
-    svg.appendChild(path);
-    chartLineContainer.appendChild(svg);
-    
-    // Создаем точки графика
-    points.forEach(point => {
-      const pointElement = document.createElement('div');
-      pointElement.className = 'chart-point';
-      pointElement.style.left = `${point.x}%`;
-      pointElement.style.top = `${point.y}%`;
-      pointElement.style.position = 'absolute';
-      
-      // Добавляем классы в зависимости от состояния
-      if (point.data.isFuture) {
-        pointElement.classList.add('future');
-      } else if (point.data.workTime === 0) {
-        pointElement.classList.add('no-data');
-      }
-      
-      // Создаем подпись со значением
-      const valueLabel = document.createElement('div');
-      valueLabel.className = 'chart-point-value';
-      valueLabel.textContent = point.coefficient.toFixed(2);
-      pointElement.appendChild(valueLabel);
-      
-      chartPointsContainer.appendChild(pointElement);
-    });
-    
-    // Создаем подписи дней (отдельно от точек) - ИСПРАВЛЕНО: равномерное распределение
-    workDays.forEach((day, index) => {
-      const label = document.createElement('div');
-      label.className = 'chart-label';
-      label.textContent = day;
-      label.style.flex = '1';
-      label.style.textAlign = 'center';
-      labelsContainer.appendChild(label);
-    });
-  }
 
   // Функции для работы с отчетами
   function openReportsDialog() {
@@ -2040,9 +1880,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновляем календарь для обновления индикаторов статуса
     renderCalendar();
     
-    // Обновляем график коэффициента выработки
-    createEfficiencyChart();
-    
     // Обновляем отображение результатов
     if (selectedDate) {
       showResults(selectedDate);
@@ -2060,5 +1897,4 @@ document.addEventListener('DOMContentLoaded', () => {
   bindMain();
   renderMachines();
   renderParts();
-  createEfficiencyChart();
 });
