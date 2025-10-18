@@ -487,7 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
     // Рассчитываем позиции границ градиента на основе реальных значений
-    // 0.0 находится снизу (100%), maxY находится сверху (0%)
+    // SVG-градиент идет снизу вверх (y1="100%" y2="0%")
+    // 0.0 = 0% (низ), maxY = 100% (верх) в градиенте
     const redZoneEnd = Math.min((0.8 / maxY) * 100, 100); // 0.8 коэффициент
     const yellowZoneEnd = Math.min((1.1 / maxY) * 100, 100); // 1.1 коэффициент
     
@@ -498,10 +499,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const greenStart = document.getElementById('greenStart');
     
     if (redStop && yellowStart && yellowStop && greenStart) {
+      // SVG offset: 0% = снизу (y1), 100% = сверху (y2)
       redStop.setAttribute('offset', `${redZoneEnd}%`);
       yellowStart.setAttribute('offset', `${redZoneEnd}%`);
       yellowStop.setAttribute('offset', `${yellowZoneEnd}%`);
       greenStart.setAttribute('offset', `${yellowZoneEnd}%`);
+      
+      console.log(`Градиент: maxY=${maxY.toFixed(2)}, red=0-${redZoneEnd.toFixed(1)}%, yellow=${redZoneEnd.toFixed(1)}-${yellowZoneEnd.toFixed(1)}%, green=${yellowZoneEnd.toFixed(1)}-100%`);
     }
     
     // Создаем подписи для оси Y (слева от графика) - синхронизированы с сеткой
