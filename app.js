@@ -399,6 +399,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Определяем, является ли выбранный месяц текущим
     const isCurrentMonth = (year === today.getFullYear() && month === (today.getMonth() + 1));
     
+    // Определяем, является ли выбранный месяц будущим
+    const isFutureMonth = (year > today.getFullYear()) || 
+                         (year === today.getFullYear() && month > (today.getMonth() + 1));
+    
     // Подсчитываем количество рабочих дней
     let totalWorkDays = 0;
     for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
@@ -430,7 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Для прошлых месяцев добавляем время за дни без записей (коэффициент 1.0)
-    if (!isCurrentMonth) {
+    // НЕ добавляем для будущих месяцев!
+    if (!isCurrentMonth && !isFutureMonth) {
       const daysWithoutRecords = totalWorkDays - workDays;
       totalWorkTime += daysWithoutRecords * (state.main.baseTime || 600);
     }
@@ -441,10 +446,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Для будущих месяцев коэффициент должен быть 0
     let efficiencyCoefficient = 0;
-    if (expectedTime > 0) {
+    if (isFutureMonth) {
+      // Будущие месяцы - коэффициент = 0
+      efficiencyCoefficient = 0;
+    } else if (expectedTime > 0) {
       efficiencyCoefficient = totalWorkTime / expectedTime;
     } else if (totalWorkDays === 0) {
-      // Если нет рабочих дней (будущий месяц), коэффициент = 0
+      // Если нет рабочих дней, коэффициент = 0
       efficiencyCoefficient = 0;
     }
     
