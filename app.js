@@ -392,24 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Функции генерации разных типов отчетов
   function generateEfficiencyReport(monthRecords, year, month, monthNames) {
-    // Подсчитываем общее время работы
-    let totalWorkTime = 0;
-    let workDays = 0;
-    
-    monthRecords.forEach(record => {
-      record.entries.forEach(entry => {
-        totalWorkTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
-      });
-      workDays++;
-    });
-    
-    // Для прошлых месяцев добавляем время за дни без записей (коэффициент 1.0)
-    if (!isCurrentMonth) {
-      const daysWithRecords = new Set(monthRecords.map(record => record.date));
-      const daysWithoutRecords = totalWorkDays - workDays;
-      totalWorkTime += daysWithoutRecords * (state.main.baseTime || 600);
-    }
-    
     // Получаем текущую дату
     const today = new Date();
     const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -434,6 +416,23 @@ document.addEventListener('DOMContentLoaded', () => {
           totalWorkDays++;
         }
       }
+    }
+    
+    // Подсчитываем общее время работы
+    let totalWorkTime = 0;
+    let workDays = 0;
+    
+    monthRecords.forEach(record => {
+      record.entries.forEach(entry => {
+        totalWorkTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+      });
+      workDays++;
+    });
+    
+    // Для прошлых месяцев добавляем время за дни без записей (коэффициент 1.0)
+    if (!isCurrentMonth) {
+      const daysWithoutRecords = totalWorkDays - workDays;
+      totalWorkTime += daysWithoutRecords * (state.main.baseTime || 600);
     }
     
     // Рассчитываем коэффициент выработки
