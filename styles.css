@@ -149,6 +149,9 @@ body{
   text-align: right;
   line-height: 1;
   white-space: nowrap;
+  padding: 2px 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .chart-area {
@@ -260,6 +263,9 @@ body{
   font-weight: 500;
   min-width: 0;
   overflow: hidden;
+  padding: 2px 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* Адаптивность для мобильных устройств */
@@ -309,14 +315,30 @@ body{
   
   .chart-wrapper {
     height: 160px;
+    flex-direction: row;
+    gap: 6px;
+  }
+  
+  .chart-y-axis {
+    min-width: 35px;
+    padding: 4px 0;
   }
   
   .chart-area {
-    height: 120px;
+    height: 160px;
+    flex: 1;
   }
   
   .chart-title {
     font-size: 14px;
+  }
+  
+  .chart-y-label {
+    font-size: 8px;
+  }
+  
+  .chart-label {
+    font-size: 8px;
   }
 }
 
