@@ -57,6 +57,19 @@
             <!-- Подписи значений Y будут генерироваться динамически -->
           </div>
           <div class="chart-area">
+            <svg class="chart-background" id="chartBackground" width="100%" height="100%" style="position: absolute; top: 0; left: 0; z-index: 0;">
+              <defs>
+                <linearGradient id="chartGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" style="stop-color:rgba(255,153,153,0.3);stop-opacity:1" />
+                  <stop offset="40%" style="stop-color:rgba(255,153,153,0.3);stop-opacity:1" id="redStop" />
+                  <stop offset="40%" style="stop-color:rgba(255,255,153,0.3);stop-opacity:1" id="yellowStart" />
+                  <stop offset="60%" style="stop-color:rgba(255,255,153,0.3);stop-opacity:1" id="yellowStop" />
+                  <stop offset="60%" style="stop-color:rgba(153,255,153,0.3);stop-opacity:1" id="greenStart" />
+                  <stop offset="100%" style="stop-color:rgba(153,255,153,0.3);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#chartGradient)" />
+            </svg>
             <div class="chart-grid" id="chartGrid">
               <!-- Сетка будет генерироваться динамически -->
             </div>

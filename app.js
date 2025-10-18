@@ -491,12 +491,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const redZoneEnd = Math.min((0.8 / maxY) * 100, 100); // 0.8 коэффициент
     const yellowZoneEnd = Math.min((1.1 / maxY) * 100, 100); // 1.1 коэффициент
     
-    // Применяем динамический градиент к области графика через CSS-переменные
-    // Это работает надежнее на мобильных устройствах
-    const chartArea = chartGridContainer.closest('.chart-area');
-    if (chartArea) {
-      chartArea.style.setProperty('--red-zone-end', `${redZoneEnd}%`);
-      chartArea.style.setProperty('--yellow-zone-end', `${yellowZoneEnd}%`);
+    // Применяем динамический градиент через SVG (работает на всех устройствах)
+    const redStop = document.getElementById('redStop');
+    const yellowStart = document.getElementById('yellowStart');
+    const yellowStop = document.getElementById('yellowStop');
+    const greenStart = document.getElementById('greenStart');
+    
+    if (redStop && yellowStart && yellowStop && greenStart) {
+      redStop.setAttribute('offset', `${redZoneEnd}%`);
+      yellowStart.setAttribute('offset', `${redZoneEnd}%`);
+      yellowStop.setAttribute('offset', `${yellowZoneEnd}%`);
+      greenStart.setAttribute('offset', `${yellowZoneEnd}%`);
     }
     
     // Создаем подписи для оси Y (слева от графика) - синхронизированы с сеткой
