@@ -113,6 +113,8 @@ body{
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  width: 100%;
+  box-sizing: border-box; /* учитывать padding в ширине */
 }
 
 .chart-title {
@@ -151,6 +153,7 @@ body{
   padding: 0 8px 0 0; /* Отступ справа для подписей оси Y */
   min-width: 0; /* Позволяет сжиматься */
   overflow: hidden; /* Скрывает выходящие элементы */
+  max-width: 100%;
 }
 
 .chart-y-axis {
