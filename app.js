@@ -469,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
       label.className = 'chart-label';
       label.textContent = day;
       label.style.flex = '1';
+      label.style.textAlign = 'center';
       labelsContainer.appendChild(label);
     });
   }
