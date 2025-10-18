@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
     svg.style.height = '100%';
     
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('stroke', '#1a1a1a'); // Темный цвет для контраста с градиентом
+    path.setAttribute('stroke', '#1e40af'); // Синий цвет для текущего месяца
     path.setAttribute('stroke-width', '2');
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke-linecap', 'round');
@@ -579,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Линия предыдущего месяца (пунктир синего цвета)
     if (prevPoints.length) {
       const prevPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      prevPath.setAttribute('stroke', '#4a5568'); // Темно-серый для контраста с градиентом
+      prevPath.setAttribute('stroke', '#dc2626'); // Красный цвет для предыдущего месяца
       prevPath.setAttribute('stroke-width', '2');
       prevPath.setAttribute('fill', 'none');
       prevPath.setAttribute('stroke-linecap', 'round');

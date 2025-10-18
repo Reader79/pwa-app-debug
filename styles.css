@@ -185,12 +185,12 @@ body{
   position: relative;
   height: 160px;
   background: linear-gradient(to bottom,
-    #ff6b6b 0%,     /* светлокрасный для 0-0.8 */
-    #ff6b6b 40%,    /* переход к желтому */
-    #ffd93d 40%,    /* светложелтый для 0.8-1.1 */
-    #ffd93d 60%,    /* переход к зеленому */
-    #6bcf7f 60%,    /* светло-зеленый для 1.1+ */
-    #6bcf7f 100%    /* до максимума */
+    #ffb3b3 0%,     /* очень светлокрасный для 0-0.8 */
+    #ffb3b3 40%,    /* переход к желтому */
+    #fff2b3 40%,    /* очень светложелтый для 0.8-1.1 */
+    #fff2b3 60%,    /* переход к зеленому */
+    #b3e6b3 60%,    /* очень светло-зеленый для 1.1+ */
+    #b3e6b3 100%    /* до максимума */
   );
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -239,7 +239,7 @@ body{
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #1a1a1a; /* Темный цвет для контраста с градиентом */
+  background: #1e40af; /* Синий цвет для текущего месяца */
   border: 2px solid rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -249,7 +249,7 @@ body{
 
 .chart-point:hover {
   transform: translate(-50%, -50%) scale(1.5);
-  box-shadow: 0 0 12px rgba(26, 26, 26, 0.8);
+  box-shadow: 0 0 12px rgba(30, 64, 175, 0.8);
 }
 
 .chart-point.no-data {
@@ -264,7 +264,7 @@ body{
 
 /* Точки предыдущего месяца */
 .chart-point.prev {
-  background: #4a5568; /* Темно-серый для контраста с градиентом */
+  background: #dc2626; /* Красный цвет для предыдущего месяца */
   border-color: rgba(255,255,255,0.9);
 }
 
