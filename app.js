@@ -319,7 +319,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportMonth = document.getElementById('reportMonth');
     const reportType = document.getElementById('reportType');
     
-    if (reportsDialog && reportMonth && reportType) {
+    console.log('Открытие диалога отчетов:', { reportsDialog, reportMonth, reportType });
+    
+    if (!reportsDialog) {
+      console.error('Диалог отчетов не найден!');
+      return;
+    }
+    
+    if (reportMonth && reportType) {
       // Устанавливаем текущий месяц по умолчанию
       const now = new Date();
       const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
@@ -328,9 +335,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Генерируем отчет
       generateReport(currentMonth, 'efficiency');
-      
-      reportsDialog.showModal();
     }
+    
+    reportsDialog.showModal();
   }
 
   function generateReport(monthString, reportType = 'efficiency') {
