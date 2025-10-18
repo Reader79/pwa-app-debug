@@ -482,14 +482,26 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней (по оси X)
+    // Создаем подписи дней (по оси X) - через один день
     workDays.forEach((day, index) => {
       const label = document.createElement('div');
       label.className = 'chart-label';
       label.textContent = day;
       label.style.flex = '1';
       label.style.textAlign = 'center';
-      labelsContainer.appendChild(label);
+      
+      // Показываем только каждый второй день для лучшей читаемости
+      if (index % 2 === 0) {
+        labelsContainer.appendChild(label);
+      } else {
+        // Добавляем пустой элемент для выравнивания
+        const emptyLabel = document.createElement('div');
+        emptyLabel.className = 'chart-label';
+        emptyLabel.style.flex = '1';
+        emptyLabel.style.textAlign = 'center';
+        emptyLabel.style.visibility = 'hidden';
+        labelsContainer.appendChild(emptyLabel);
+      }
     });
   }
 
