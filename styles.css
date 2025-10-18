@@ -77,8 +77,9 @@ body{
 .button-grid{
   display:grid;
   gap:20px;
-  width:100%;
-  max-width:800px;
+  width:66vw; /* Занимает 2/3 ширины экрана */
+  max-width:800px; /* Но не более 800px на больших экранах */
+  margin: 0 auto; /* Центрирует сетку кнопок */
   grid-template-columns:1fr;
 }
 
@@ -825,7 +826,11 @@ button.secondary:hover{
 @media (max-width:480px){
   .app-header{padding:12px}
   .app-main{padding:12px}
-  .button-grid{gap:10px}
+  .button-grid{
+    gap:10px;
+    width:90vw; /* Почти на всю ширину на очень маленьких экранах */
+    max-width:400px;
+  }
   .section-header{padding:10px 12px}
   .calendar{gap:4px;padding:8px}
   .calendar .cell{padding:8px;min-height:56px}
@@ -836,10 +841,18 @@ button.secondary:hover{
 }
 
 @media (min-width:640px){
-  .button-grid{grid-template-columns:repeat(2,1fr)}
+  .button-grid{
+    grid-template-columns:repeat(2,1fr);
+    width:70vw; /* Немного больше на планшетах */
+    max-width:600px;
+  }
 }
 @media (min-width:960px){
-  .button-grid{grid-template-columns:repeat(3,1fr)}
+  .button-grid{
+    grid-template-columns:repeat(3,1fr);
+    width:75vw; /* Еще больше на десктопах */
+    max-width:800px;
+  }
   .calendar .cell{aspect-ratio:1/1}
 }
 @media (min-width:1280px){
