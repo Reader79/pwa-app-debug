@@ -50,12 +50,20 @@
       <div class="efficiency-chart-container">
         <h3 class="chart-title">Коэффициент выработки за текущий месяц</h3>
         <div class="chart-wrapper">
-          <div class="chart-bars" id="efficiencyChart">
-            <!-- График будет генерироваться динамически -->
+          <div class="chart-y-axis" id="chartYAxis">
+            <!-- Подписи значений Y будут генерироваться динамически -->
           </div>
-          <div class="chart-labels" id="chartLabels">
-            <!-- Подписи дней будут генерироваться динамически -->
+          <div class="chart-area">
+            <div class="chart-line" id="chartLine">
+              <!-- Линия графика будет генерироваться динамически -->
+            </div>
+            <div class="chart-points" id="chartPoints">
+              <!-- Точки графика будут генерироваться динамически -->
+            </div>
           </div>
+        </div>
+        <div class="chart-labels" id="chartLabels">
+          <!-- Подписи дней будут генерироваться динамически -->
         </div>
       </div>
       

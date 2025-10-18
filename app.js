@@ -315,10 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Функция для создания графика коэффициента выработки
   function createEfficiencyChart() {
-    const chartContainer = document.getElementById('efficiencyChart');
+    const yAxisContainer = document.getElementById('chartYAxis');
+    const chartLineContainer = document.getElementById('chartLine');
+    const chartPointsContainer = document.getElementById('chartPoints');
     const labelsContainer = document.getElementById('chartLabels');
     
-    if (!chartContainer || !labelsContainer) return;
+    if (!yAxisContainer || !chartLineContainer || !chartPointsContainer || !labelsContainer) return;
     
     // Получаем текущий месяц
     const today = new Date();
@@ -372,41 +374,89 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Генерируем HTML для графика
-    chartContainer.innerHTML = '';
+    yAxisContainer.innerHTML = '';
+    chartLineContainer.innerHTML = '';
+    chartPointsContainer.innerHTML = '';
     labelsContainer.innerHTML = '';
     
     const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
     const maxCoefficient = Math.max(...workDays.map(day => dailyData[day].coefficient), 1);
     
-    workDays.forEach(day => {
+    // Создаем подписи для оси Y
+    const yLabels = [0, 0.5, 1.0, 1.5, 2.0];
+    yLabels.forEach(value => {
+      const label = document.createElement('div');
+      label.className = 'chart-y-label';
+      label.textContent = value.toFixed(1);
+      yAxisContainer.appendChild(label);
+    });
+    
+    // Создаем SVG для линии графика
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke', '#22c55e');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    
+    let pathData = '';
+    const points = [];
+    
+    workDays.forEach((day, index) => {
       const data = dailyData[day];
       const coefficient = data.coefficient;
-      const height = Math.max((coefficient / maxCoefficient) * 100, 2); // Минимум 2% высоты
       
-      // Создаем столбец
-      const bar = document.createElement('div');
-      bar.className = 'chart-bar';
-      bar.style.height = `${height}%`;
+      // Рассчитываем позицию точки
+      const x = (index / (workDays.length - 1)) * 100; // Процент от ширины
+      const y = 100 - (coefficient / maxCoefficient) * 100; // Процент от высоты (инвертированный)
+      
+      points.push({ x, y, day, data, coefficient });
+      
+      // Добавляем точку в путь
+      if (index === 0) {
+        pathData += `M ${x} ${y}`;
+      } else {
+        pathData += ` L ${x} ${y}`;
+      }
+    });
+    
+    path.setAttribute('d', pathData);
+    svg.appendChild(path);
+    chartLineContainer.appendChild(svg);
+    
+    // Создаем точки графика
+    points.forEach(point => {
+      const pointElement = document.createElement('div');
+      pointElement.className = 'chart-point';
+      pointElement.style.left = `${point.x}%`;
+      pointElement.style.top = `${point.y}%`;
       
       // Добавляем классы в зависимости от состояния
-      if (data.isFuture) {
-        bar.classList.add('future');
-      } else if (data.workTime === 0) {
-        bar.classList.add('no-data');
+      if (point.data.isFuture) {
+        pointElement.classList.add('future');
+      } else if (point.data.workTime === 0) {
+        pointElement.classList.add('no-data');
       }
       
       // Создаем подпись со значением
       const valueLabel = document.createElement('div');
-      valueLabel.className = 'chart-bar-value';
-      valueLabel.textContent = coefficient.toFixed(2);
-      bar.appendChild(valueLabel);
+      valueLabel.className = 'chart-point-value';
+      valueLabel.textContent = point.coefficient.toFixed(2);
+      pointElement.appendChild(valueLabel);
       
-      chartContainer.appendChild(bar);
+      chartPointsContainer.appendChild(pointElement);
       
       // Создаем подпись дня
       const label = document.createElement('div');
       label.className = 'chart-label';
-      label.textContent = day;
+      label.textContent = point.day;
       labelsContainer.appendChild(label);
     });
   }
