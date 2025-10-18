@@ -161,7 +161,7 @@ body{
   height: 160px;
   min-width: 40px;
   flex-shrink: 0;
-  padding: 0;
+  padding: 8px 0; /* Отступы сверху и снизу для первого и последнего значений */
 }
 
 .chart-y-label {
@@ -183,6 +183,7 @@ body{
   flex: 1;
   position: relative;
   height: 160px;
+  margin: 8px 0; /* Отступы сверху и снизу для выравнивания с осью Y */
   background: linear-gradient(to top,
     rgba(255, 153, 153, 0.3) 0%,     /* полупрозрачный светлокрасный для 0-0.8 */
     rgba(255, 153, 153, 0.3) 40%,    /* переход к желтому */
