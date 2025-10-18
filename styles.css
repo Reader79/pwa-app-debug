@@ -130,6 +130,7 @@ body{
   flex-direction: row;
   gap: 8px;
   width: 100%;
+  padding: 0 8px 0 0; /* Отступ справа для подписей оси Y */
 }
 
 .chart-y-axis {
@@ -152,6 +153,8 @@ body{
   padding: 2px 4px;
   border-radius: 2px;
   background: rgba(0, 0, 0, 0.3);
+  margin-right: 4px; /* Отступ от края */
+  min-width: 24px; /* Минимальная ширина для выравнивания */
 }
 
 .chart-area {
@@ -254,6 +257,8 @@ body{
   gap: 2px;
   width: 100%;
   align-items: center;
+  margin-left: 40px; /* Отступ слева для выравнивания с областью графика */
+  margin-right: 8px; /* Отступ справа */
 }
 
 .chart-label {
@@ -267,6 +272,8 @@ body{
   padding: 2px 4px;
   border-radius: 2px;
   background: rgba(0, 0, 0, 0.3);
+  max-width: 20px; /* Ограничение ширины для предотвращения наложения */
+  white-space: nowrap;
 }
 
 /* Адаптивность для мобильных устройств */
@@ -280,13 +287,14 @@ body{
     height: 180px;
     flex-direction: row;
     gap: 8px;
+    padding: 0 6px 0 0;
   }
   
   .chart-y-axis {
     height: 160px;
     flex-direction: column;
     justify-content: space-between;
-    min-width: 40px;
+    min-width: 35px;
     padding: 8px 0;
   }
   
@@ -306,6 +314,11 @@ body{
   
   .chart-label {
     font-size: 9px;
+  }
+  
+  .chart-labels {
+    margin-left: 35px;
+    margin-right: 6px;
   }
 }
 
