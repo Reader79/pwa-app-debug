@@ -335,10 +335,21 @@ document.addEventListener('DOMContentLoaded', () => {
       return recordYear === currentYear && recordMonth === currentMonth;
     });
     
+    // Предыдущий месяц
+    const prevMonthDate = new Date(currentYear, currentMonth - 2, 1); // month is 0-based
+    const prevYear = prevMonthDate.getFullYear();
+    const prevMonth = prevMonthDate.getMonth() + 1;
+    const prevMonthRecords = state.records.filter(record => {
+      const recordYear = parseInt(record.date.split('-')[0]);
+      const recordMonth = parseInt(record.date.split('-')[1]);
+      return recordYear === prevYear && recordMonth === prevMonth;
+    });
+    
     // Создаем объект для хранения данных по дням
     const dailyData = {};
+    const prevDailyData = {};
     
-    // Инициализируем все дни месяца
+    // Инициализируем все дни месяца (текущий)
     const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth - 1, day);
@@ -352,6 +363,24 @@ document.addEventListener('DOMContentLoaded', () => {
           isWorkDay: true,
           isPast: date <= today,
           isFuture: date > today,
+          workTime: 0,
+          coefficient: 0
+        };
+      }
+    }
+    
+    // Инициализируем все дни предыдущего месяца
+    const prevDaysInMonth = new Date(prevYear, prevMonth, 0).getDate();
+    for (let day = 1; day <= prevDaysInMonth; day++) {
+      const date = new Date(prevYear, prevMonth - 1, day);
+      const shiftType = getShiftType(date);
+      if (shiftType === 'D' || shiftType === 'N') {
+        const dateString = `${prevYear}-${String(prevMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        prevDailyData[day] = {
+          date: dateString,
+          isWorkDay: true,
+          isPast: true,
+          isFuture: false,
           workTime: 0,
           coefficient: 0
         };
@@ -374,6 +403,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
+    // Заполняем данные из записей предыдущего месяца
+    prevMonthRecords.forEach(record => {
+      const day = parseInt(record.date.split('-')[2]);
+      if (prevDailyData[day]) {
+        let dayWorkTime = 0;
+        record.entries.forEach(entry => {
+          dayWorkTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        });
+        prevDailyData[day].workTime = dayWorkTime;
+        const baseTime = state.main.baseTime || 600;
+        prevDailyData[day].coefficient = dayWorkTime / baseTime;
+      }
+    });
+    
     // Генерируем HTML для графика
     yAxisContainer.innerHTML = '';
     chartGridContainer.innerHTML = '';
@@ -382,10 +425,12 @@ document.addEventListener('DOMContentLoaded', () => {
     labelsContainer.innerHTML = '';
     
     const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
+    const prevWorkDays = Object.keys(prevDailyData).map(Number).sort((a, b) => a - b);
     
-    // Рассчитываем максимальный коэффициент
+    // Рассчитываем максимальный коэффициент, учитывая обе кривые
     const coefficients = workDays.map(day => dailyData[day].coefficient);
-    const maxCoefficient = Math.max(...coefficients, 1);
+    const prevCoefficients = prevWorkDays.map(day => prevDailyData[day].coefficient);
+    const maxCoefficient = Math.max(...coefficients, ...(prevCoefficients.length ? prevCoefficients : [0]), 1);
     const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
     // Создаем подписи для оси Y (коэффициенты) - адаптивные значения снизу вверх
@@ -434,7 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
     path.setAttribute('stroke-linejoin', 'round');
     
     let pathData = '';
+    let prevPathData = '';
     const points = [];
+    const prevPoints = [];
     
     workDays.forEach((day, index) => {
       const data = dailyData[day];
@@ -452,10 +499,36 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         pathData += ` L ${x} ${y}`;
       }
+      // Предыдущий месяц: используем ту же X-координату по порядку рабочего дня
+      if (index < prevWorkDays.length) {
+        const pDay = prevWorkDays[index];
+        const pData = prevDailyData[pDay];
+        const pCoef = pData?.coefficient ?? 0;
+        const py = 100 - (pCoef / maxY) * 100;
+        prevPoints.push({ x, y: py, day: pDay, data: pData, coefficient: pCoef });
+        if (index === 0) {
+          prevPathData += `M ${x} ${py}`;
+        } else {
+          prevPathData += ` L ${x} ${py}`;
+        }
+      }
     });
     
     path.setAttribute('d', pathData);
     svg.appendChild(path);
+    
+    // Линия предыдущего месяца (пунктир синего цвета)
+    if (prevPoints.length) {
+      const prevPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      prevPath.setAttribute('stroke', '#60a5fa');
+      prevPath.setAttribute('stroke-width', '2');
+      prevPath.setAttribute('fill', 'none');
+      prevPath.setAttribute('stroke-linecap', 'round');
+      prevPath.setAttribute('stroke-linejoin', 'round');
+      prevPath.setAttribute('stroke-dasharray', '5 4');
+      prevPath.setAttribute('d', prevPathData);
+      svg.appendChild(prevPath);
+    }
     chartLineContainer.appendChild(svg);
     
     // Создаем точки графика
@@ -479,6 +552,20 @@ document.addEventListener('DOMContentLoaded', () => {
       valueLabel.textContent = point.coefficient.toFixed(2);
       pointElement.appendChild(valueLabel);
       
+      chartPointsContainer.appendChild(pointElement);
+    });
+    
+    // Точки предыдущего месяца
+    prevPoints.forEach(point => {
+      const pointElement = document.createElement('div');
+      pointElement.className = 'chart-point prev';
+      pointElement.style.left = `${point.x}%`;
+      pointElement.style.top = `${point.y}%`;
+      pointElement.style.position = 'absolute';
+      const valueLabel = document.createElement('div');
+      valueLabel.className = 'chart-point-value';
+      valueLabel.textContent = point.coefficient.toFixed(2);
+      pointElement.appendChild(valueLabel);
       chartPointsContainer.appendChild(pointElement);
     });
     
