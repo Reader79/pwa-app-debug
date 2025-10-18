@@ -343,8 +343,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Находим все записи за месяц
     const monthRecords = state.records.filter(record => {
-      const recordDate = new Date(record.date);
-      return recordDate >= startDate && recordDate <= endDate;
+      // record.date в формате "YYYY-MM-DD", сравниваем как строки
+      const recordYear = parseInt(record.date.split('-')[0]);
+      const recordMonth = parseInt(record.date.split('-')[1]);
+      
+      return recordYear === year && recordMonth === month;
     });
     
     const monthNames = [
