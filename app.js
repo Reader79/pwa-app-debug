@@ -381,17 +381,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const date = new Date(currentYear, currentMonth - 1, day);
       const shiftType = getShiftType(date);
       
-      // Учитываем только рабочие дни И только завершенные дни
-      if ((shiftType === 'D' || shiftType === 'N') && isWorkDayCompleted(date)) {
+      // Учитываем только рабочие дни
+      if (shiftType === 'D' || shiftType === 'N') {
         const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        dailyData[day] = {
-          date: dateString,
-          isWorkDay: true,
-          isPast: true, // Все завершенные дни считаются прошедшими
-          isFuture: false,
-          workTime: 0,
-          coefficient: 0
-        };
+        
+        // Проверяем завершенность дня (время смены ИЛИ наличие записей)
+        const isCompleted = isWorkDayCompleted(date);
+        
+        if (isCompleted) {
+          dailyData[day] = {
+            date: dateString,
+            isWorkDay: true,
+            isPast: true, // Все завершенные дни считаются прошедшими
+            isFuture: false,
+            workTime: 0,
+            coefficient: 0
+          };
+        }
       }
     }
     
@@ -772,7 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const shiftType = getShiftType(date);
       
       if (shiftType === 'D' || shiftType === 'N') {
-        // Учитываем только завершенные рабочие дни
+        // Учитываем только завершенные рабочие дни (время смены ИЛИ наличие записей)
         if (isWorkDayCompleted(date)) {
           totalWorkDays++;
         }
@@ -1753,7 +1759,24 @@ document.addEventListener('DOMContentLoaded', () => {
       return true;
     }
     
-    // Если это сегодня - проверяем время смены
+    // Если это сегодня - проверяем два условия:
+    // 1. Время смены ИЛИ 2. Наличие записей о работах
+    
+    // Проверяем наличие записей о работах на этот день
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    const hasRecords = state.records.some(record => 
+      record.date === dateString && record.entries.length > 0
+    );
+    
+    // Если есть записи - день завершен
+    if (hasRecords) {
+      return true;
+    }
+    
+    // Если записей нет - проверяем время смены
     const shiftType = getShiftType(date);
     const currentHour = now.getHours();
     
