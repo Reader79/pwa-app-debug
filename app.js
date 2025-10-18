@@ -455,34 +455,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseTime = state.main.baseTime || 600; // Значение по умолчанию
     const totalCoefficient = calculateCoefficient(totalTime, baseTime);
     
-    const summaryDiv = document.createElement('div');
-    summaryDiv.className = 'machine-group';
+    // Создаем итоговую карточку в том же стиле
+    const summaryCard = document.createElement('div');
+    summaryCard.className = 'machine-card';
     
-    const summaryTitle = document.createElement('h4');
-    summaryTitle.className = 'machine-title';
-    summaryTitle.textContent = 'Итоговые показатели';
-    summaryDiv.appendChild(summaryTitle);
+    // Заголовок итогов
+    const summaryHeader = document.createElement('div');
+    summaryHeader.className = 'machine-header';
+    summaryHeader.textContent = 'ИТОГОВЫЕ ПОКАЗАТЕЛИ';
+    summaryCard.appendChild(summaryHeader);
     
-    const summaryTable = document.createElement('table');
-    summaryTable.className = 'results-table summary-table';
+    // Контейнер для итоговых данных
+    const summaryContainer = document.createElement('div');
+    summaryContainer.className = 'operations-container';
     
-    summaryTable.innerHTML = `
-      <thead>
-        <tr>
-          <th>Общее время всех деталей (мин)</th>
-          <th>Коэффициент рабочего времени</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="total-time">${totalTime}</td>
-          <td class="coefficient">${totalCoefficient}</td>
-        </tr>
-      </tbody>
+    // Карточка с итоговыми данными
+    const summaryDataCard = document.createElement('div');
+    summaryDataCard.className = 'operation-card';
+    
+    const summaryData = document.createElement('div');
+    summaryData.className = 'operation-data';
+    
+    summaryData.innerHTML = `
+      <div class="data-row">
+        <span class="data-label">Общее время всех деталей:</span>
+        <span class="data-value">${totalTime} мин</span>
+      </div>
+      <div class="data-row">
+        <span class="data-label">Коэффициент рабочего времени:</span>
+        <span class="data-value">${totalCoefficient}</span>
+      </div>
     `;
     
-    summaryDiv.appendChild(summaryTable);
-    resultsContainer.appendChild(summaryDiv);
+    summaryDataCard.appendChild(summaryData);
+    summaryContainer.appendChild(summaryDataCard);
+    summaryCard.appendChild(summaryContainer);
+    resultsContainer.appendChild(summaryCard);
     
     resultsSection.style.display = 'block';
   }
