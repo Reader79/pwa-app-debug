@@ -486,6 +486,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxCoefficient = Math.max(...coefficients, ...(prevCoefficients.length ? prevCoefficients : [0]), 1);
     const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
+    // Рассчитываем позиции границ градиента на основе реальных значений
+    // 0.0 находится снизу (100%), maxY находится сверху (0%)
+    const redZoneEnd = Math.min((0.8 / maxY) * 100, 100); // 0.8 коэффициент
+    const yellowZoneEnd = Math.min((1.1 / maxY) * 100, 100); // 1.1 коэффициент
+    
+    // Применяем динамический градиент к области графика
+    const chartArea = document.querySelector('.chart-area');
+    if (chartArea) {
+      const gradient = `linear-gradient(to top,
+        rgba(255, 153, 153, 0.3) 0%,
+        rgba(255, 153, 153, 0.3) ${redZoneEnd}%,
+        rgba(255, 255, 153, 0.3) ${redZoneEnd}%,
+        rgba(255, 255, 153, 0.3) ${yellowZoneEnd}%,
+        rgba(153, 255, 153, 0.3) ${yellowZoneEnd}%,
+        rgba(153, 255, 153, 0.3) 100%
+      )`;
+      chartArea.style.background = gradient;
+    }
+    
     // Создаем подписи для оси Y (слева от графика) - синхронизированы с сеткой
     const yLabels = [maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0]; // Значения снизу вверх
     yLabels.forEach((value, i) => {
