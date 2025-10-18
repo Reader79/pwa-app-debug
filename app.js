@@ -397,15 +397,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const today = new Date();
     const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     
-    // Подсчитываем количество рабочих дней до текущей даты
+    // Определяем, является ли выбранный месяц текущим
+    const isCurrentMonth = (year === today.getFullYear() && month === (today.getMonth() + 1));
+    
+    // Подсчитываем количество рабочих дней
     let totalWorkDays = 0;
     for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
       const date = new Date(year, month - 1, day);
       const shiftType = getShiftType(date);
       
-      // Учитываем только рабочие дни до текущей даты
-      if ((shiftType === 'D' || shiftType === 'N') && date <= currentDate) {
-        totalWorkDays++;
+      if (shiftType === 'D' || shiftType === 'N') {
+        // Для текущего месяца - только дни до текущей даты
+        // Для прошлых месяцев - все рабочие дни
+        if (isCurrentMonth) {
+          if (date <= currentDate) {
+            totalWorkDays++;
+          }
+        } else {
+          totalWorkDays++;
+        }
       }
     }
     
