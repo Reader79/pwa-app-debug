@@ -482,13 +482,16 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней (по оси X) - точное позиционирование под точками
+    // Создаем подписи дней (по оси X) - ЖЕСТКОЕ выравнивание с точками
     workDays.forEach((day, index) => {
       const label = document.createElement('div');
       label.className = 'chart-label';
       label.textContent = day;
       label.style.position = 'absolute';
-      label.style.left = workDays.length > 1 ? `${(index / (workDays.length - 1)) * 100}%` : '50%';
+      
+      // ЖЕСТКОЕ ВЫРАВНИВАНИЕ: используем ТЕ ЖЕ координаты что и точки графика
+      const pointX = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50;
+      label.style.left = `${pointX}%`;
       label.style.transform = 'translateX(-50%)'; // Центрирование относительно точки
       label.style.textAlign = 'center';
       label.style.fontSize = '10px';
