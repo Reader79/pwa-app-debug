@@ -403,6 +403,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
+    // Объявляем workDays ДО использования
+    const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
+    
     // ПРАВИЛО: Прошедшие рабочие дни без записей = коэффициент 1.0
     workDays.forEach(day => {
       const dayData = dailyData[day];
@@ -440,7 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
     chartPointsContainer.innerHTML = '';
     labelsContainer.innerHTML = '';
     
-    const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
     const prevWorkDays = Object.keys(prevDailyData).map(Number).sort((a, b) => a - b);
     
     // Рассчитываем максимальный коэффициент, учитывая обе кривые
