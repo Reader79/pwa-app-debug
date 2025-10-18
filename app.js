@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Создаем подписи для оси Y (динамически на основе данных)
     const maxY = Math.ceil(maxCoefficient * 1.2); // Добавляем 20% сверху
-    const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY];
+    const yLabels = [maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0]; // ИСПРАВЛЕНО: инвертированный порядок
     yLabels.forEach(value => {
       const label = document.createElement('div');
       label.className = 'chart-y-label';
@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Исправляем расчет позиции точки
       const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50; // Если один день - по центру
-      const y = 100 - (coefficient / maxY) * 100; // Используем maxY вместо maxCoefficient
+      const y = (coefficient / maxY) * 100; // ИСПРАВЛЕНО: убираем инверсию
       
       points.push({ x, y, day, data, coefficient });
       
@@ -458,11 +458,12 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней (отдельно от точек)
-    workDays.forEach(day => {
+    // Создаем подписи дней (отдельно от точек) - ИСПРАВЛЕНО: равномерное распределение
+    workDays.forEach((day, index) => {
       const label = document.createElement('div');
       label.className = 'chart-label';
       label.textContent = day;
+      label.style.flex = '1';
       labelsContainer.appendChild(label);
     });
   }
