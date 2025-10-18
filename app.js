@@ -478,12 +478,11 @@ document.addEventListener('DOMContentLoaded', () => {
       chartGridContainer.appendChild(line);
     }
     
-    // Вертикальные линии (для дней по X) - используем максимальное количество дней
-    const maxDays = Math.max(workDays.length, prevWorkDays.length);
-    for (let i = 0; i < maxDays; i++) {
+    // Вертикальные линии (для дней по X) - 31 позиция (максимум дней в месяце)
+    for (let i = 1; i <= 31; i++) {
       const line = document.createElement('div');
       line.className = 'chart-grid-line vertical';
-      line.style.left = maxDays > 1 ? `${(i / (maxDays - 1)) * 100}%` : '50%';
+      line.style.left = `${((i - 1) / 30) * 100}%`; // От 0 до 30 (31 позиция)
       chartGridContainer.appendChild(line);
     }
     
@@ -516,8 +515,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = dailyData[day];
       const coefficient = data.coefficient;
       
-      // ИСПРАВЛЕНО: правильные позиции точек
-      const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50; // Дни по X (горизонтально)
+      // X-позиция соответствует дню месяца (1-31)
+      const x = ((day - 1) / 30) * 100; // День 1 = 0%, день 31 = 100%
       const y = 100 - (coefficient / maxY) * 100; // Коэффициенты по Y (вертикально, 0 снизу)
       
       points.push({ x, y, day, data, coefficient });
@@ -535,8 +534,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const pData = prevDailyData[day];
       const pCoef = pData?.coefficient ?? 0;
       
-      // X-координата для предыдущего месяца (все дни)
-      const px = prevWorkDays.length > 1 ? (index / (prevWorkDays.length - 1)) * 100 : 50;
+      // X-позиция соответствует дню месяца (1-31)
+      const px = ((day - 1) / 30) * 100; // День 1 = 0%, день 31 = 100%
       const py = 100 - (pCoef / maxY) * 100;
       
       prevPoints.push({ x: px, y: py, day, data: pData, coefficient: pCoef });
@@ -603,16 +602,15 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней (по оси X) - показываем дни из обеих кривых
-    const allDays = [...new Set([...workDays, ...prevWorkDays])].sort((a, b) => a - b);
-    allDays.forEach((day, index) => {
+    // Создаем подписи дней (по оси X) - показываем дни 1-31, но только через один
+    for (let day = 1; day <= 31; day += 2) { // Каждый второй день
       const label = document.createElement('div');
       label.className = 'chart-label';
       label.textContent = day;
       label.style.position = 'absolute';
       
-      // Используем максимальное количество дней для позиционирования
-      const pointX = maxDays > 1 ? (index / (maxDays - 1)) * 100 : 50;
+      // X-позиция соответствует дню месяца
+      const pointX = ((day - 1) / 30) * 100;
       label.style.left = `${pointX}%`;
       label.style.transform = 'translateX(-50%)'; // Центрирование относительно точки
       label.style.textAlign = 'center';
@@ -626,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
       label.style.minWidth = '20px';
       
       labelsContainer.appendChild(label);
-    });
+    }
   }
 
   // Функции для работы с отчетами
