@@ -317,21 +317,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function openReportsDialog() {
     const reportsDialog = document.getElementById('reportsDialog');
     const reportMonth = document.getElementById('reportMonth');
+    const reportType = document.getElementById('reportType');
     
-    if (reportsDialog && reportMonth) {
+    if (reportsDialog && reportMonth && reportType) {
       // Устанавливаем текущий месяц по умолчанию
       const now = new Date();
       const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
       reportMonth.value = currentMonth;
+      reportType.value = 'efficiency';
       
       // Генерируем отчет
-      generateReport(currentMonth);
+      generateReport(currentMonth, 'efficiency');
       
       reportsDialog.showModal();
     }
   }
 
-  function generateReport(monthString) {
+  function generateReport(monthString, reportType = 'efficiency') {
     const reportContent = document.getElementById('reportContent');
     if (!reportContent) return;
     
@@ -345,6 +347,41 @@ document.addEventListener('DOMContentLoaded', () => {
       return recordDate >= startDate && recordDate <= endDate;
     });
     
+    const monthNames = [
+      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+    
+    let reportHTML = '';
+    
+    switch (reportType) {
+      case 'efficiency':
+        reportHTML = generateEfficiencyReport(monthRecords, year, month, monthNames);
+        break;
+      case 'parts':
+        reportHTML = generatePartsReport(monthRecords, year, month, monthNames);
+        break;
+      case 'machines':
+        reportHTML = generateMachinesReport(monthRecords, year, month, monthNames);
+        break;
+      case 'productivity':
+        reportHTML = generateProductivityReport(monthRecords, year, month, monthNames);
+        break;
+      case 'overtime':
+        reportHTML = generateOvertimeReport(monthRecords, year, month, monthNames);
+        break;
+      case 'quality':
+        reportHTML = generateQualityReport(monthRecords, year, month, monthNames);
+        break;
+      default:
+        reportHTML = generateEfficiencyReport(monthRecords, year, month, monthNames);
+    }
+    
+    reportContent.innerHTML = reportHTML;
+  }
+
+  // Функции генерации разных типов отчетов
+  function generateEfficiencyReport(monthRecords, year, month, monthNames) {
     // Подсчитываем общее время работы
     let totalWorkTime = 0;
     let workDays = 0;
@@ -358,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Подсчитываем количество смен в месяце
     let shiftsInMonth = 0;
-    for (let day = 1; day <= endDate.getDate(); day++) {
+    for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
       const date = new Date(year, month - 1, day);
       const shiftType = getShiftType(date);
       if (shiftType === 'D' || shiftType === 'N') {
@@ -371,15 +408,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const expectedTime = shiftsInMonth * baseTime;
     const efficiencyCoefficient = expectedTime > 0 ? (totalWorkTime / expectedTime) : 0;
     
-    // Форматируем отчет
-    const monthNames = [
-      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-    ];
-    
-    reportContent.innerHTML = `
+    return `
       <div class="machine-card">
-        <div class="machine-header">ОТЧЕТ ЗА ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="machine-header">КОЭФФИЦИЕНТ ВЫРАБОТКИ - ${monthNames[month - 1].toUpperCase()} ${year}</div>
         <div class="operations-container">
           <div class="operation-card">
             <div class="operation-data">
@@ -410,6 +441,397 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `;
+  }
+
+  function generatePartsReport(monthRecords, year, month, monthNames) {
+    const partsStats = {};
+    
+    monthRecords.forEach(record => {
+      record.entries.forEach(entry => {
+        const key = `${entry.part} - ${entry.operation}`;
+        if (!partsStats[key]) {
+          partsStats[key] = {
+            part: entry.part,
+            operation: entry.operation,
+            totalQuantity: 0,
+            totalTime: 0,
+            machines: new Set()
+          };
+        }
+        partsStats[key].totalQuantity += entry.quantity;
+        partsStats[key].totalTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        partsStats[key].machines.add(entry.machine);
+      });
+    });
+    
+    const partsList = Object.values(partsStats).sort((a, b) => b.totalQuantity - a.totalQuantity);
+    
+    let partsHTML = `
+      <div class="machine-card">
+        <div class="machine-header">ПРОИЗВЕДЕННЫЕ ДЕТАЛИ - ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="operations-container">
+    `;
+    
+    partsList.forEach(part => {
+      partsHTML += `
+        <div class="operation-card">
+          <div class="operation-data">
+            <div class="data-row">
+              <span class="data-label">Деталь:</span>
+              <span class="data-value">${part.part}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Операция:</span>
+              <span class="data-value">${part.operation}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Количество:</span>
+              <span class="data-value">${part.totalQuantity} шт</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Время работы:</span>
+              <span class="data-value">${part.totalTime} мин</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Станки:</span>
+              <span class="data-value">${Array.from(part.machines).join(', ')}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    partsHTML += `
+        </div>
+      </div>
+    `;
+    
+    return partsHTML;
+  }
+
+  function generateMachinesReport(monthRecords, year, month, monthNames) {
+    const machinesStats = {};
+    
+    monthRecords.forEach(record => {
+      record.entries.forEach(entry => {
+        if (!machinesStats[entry.machine]) {
+          machinesStats[entry.machine] = {
+            totalTime: 0,
+            workDays: new Set(),
+            parts: new Set(),
+            totalParts: 0
+          };
+        }
+        machinesStats[entry.machine].totalTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        machinesStats[entry.machine].workDays.add(record.date);
+        machinesStats[entry.machine].parts.add(entry.part);
+        machinesStats[entry.machine].totalParts += entry.quantity;
+      });
+    });
+    
+    const machinesList = Object.entries(machinesStats).map(([machine, stats]) => ({
+      machine,
+      ...stats,
+      workDaysCount: stats.workDays.size
+    })).sort((a, b) => b.totalTime - a.totalTime);
+    
+    let machinesHTML = `
+      <div class="machine-card">
+        <div class="machine-header">ЗАГРУЗКА СТАНКОВ - ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="operations-container">
+    `;
+    
+    machinesList.forEach(machine => {
+      machinesHTML += `
+        <div class="operation-card">
+          <div class="operation-data">
+            <div class="data-row">
+              <span class="data-label">Станок:</span>
+              <span class="data-value">${machine.machine}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Время работы:</span>
+              <span class="data-value">${machine.totalTime} мин</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Рабочих дней:</span>
+              <span class="data-value">${machine.workDaysCount}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Изготовлено деталей:</span>
+              <span class="data-value">${machine.totalParts} шт</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Видов деталей:</span>
+              <span class="data-value">${machine.parts.size}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    machinesHTML += `
+        </div>
+      </div>
+    `;
+    
+    return machinesHTML;
+  }
+
+  function generateProductivityReport(monthRecords, year, month, monthNames) {
+    const dailyStats = {};
+    
+    monthRecords.forEach(record => {
+      const date = new Date(record.date);
+      const dayKey = date.getDate();
+      let dayTotalTime = 0;
+      let dayParts = 0;
+      
+      record.entries.forEach(entry => {
+        dayTotalTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        dayParts += entry.quantity;
+      });
+      
+      dailyStats[dayKey] = {
+        date: record.date,
+        shiftType: record.shiftType,
+        totalTime: dayTotalTime,
+        partsCount: dayParts,
+        entriesCount: record.entries.length
+      };
+    });
+    
+    const daysList = Object.entries(dailyStats)
+      .map(([day, stats]) => ({ day: parseInt(day), ...stats }))
+      .sort((a, b) => a.day - b.day);
+    
+    let productivityHTML = `
+      <div class="machine-card">
+        <div class="machine-header">ПРОИЗВОДИТЕЛЬНОСТЬ ПО ДНЯМ - ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="operations-container">
+    `;
+    
+    daysList.forEach(day => {
+      const shiftTypeText = day.shiftType === 'D' ? 'Дневная' : day.shiftType === 'N' ? 'Ночная' : 'Выходной';
+      productivityHTML += `
+        <div class="operation-card">
+          <div class="operation-data">
+            <div class="data-row">
+              <span class="data-label">${day.day} число:</span>
+              <span class="data-value">${shiftTypeText}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Время работы:</span>
+              <span class="data-value">${day.totalTime} мин</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Изготовлено деталей:</span>
+              <span class="data-value">${day.partsCount} шт</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Операций:</span>
+              <span class="data-value">${day.entriesCount}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    productivityHTML += `
+        </div>
+      </div>
+    `;
+    
+    return productivityHTML;
+  }
+
+  function generateOvertimeReport(monthRecords, year, month, monthNames) {
+    const overtimeDays = [];
+    const regularDays = [];
+    
+    monthRecords.forEach(record => {
+      const date = new Date(record.date);
+      const shiftType = getShiftType(date);
+      
+      if (shiftType === 'O') {
+        // Выходной день с работой
+        let dayTotalTime = 0;
+        record.entries.forEach(entry => {
+          dayTotalTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        });
+        
+        overtimeDays.push({
+          date: record.date,
+          totalTime: dayTotalTime,
+          partsCount: record.entries.reduce((sum, entry) => sum + entry.quantity, 0)
+        });
+      } else {
+        // Обычный рабочий день
+        let dayTotalTime = 0;
+        record.entries.forEach(entry => {
+          dayTotalTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        });
+        
+        regularDays.push({
+          date: record.date,
+          shiftType: shiftType,
+          totalTime: dayTotalTime,
+          partsCount: record.entries.reduce((sum, entry) => sum + entry.quantity, 0)
+        });
+      }
+    });
+    
+    const totalOvertimeTime = overtimeDays.reduce((sum, day) => sum + day.totalTime, 0);
+    const totalRegularTime = regularDays.reduce((sum, day) => sum + day.totalTime, 0);
+    
+    let overtimeHTML = `
+      <div class="machine-card">
+        <div class="machine-header">ПОДРАБОТКИ И ВЫХОДНЫЕ - ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="operations-container">
+          <div class="operation-card">
+            <div class="operation-data">
+              <div class="data-row">
+                <span class="data-label">Подработок:</span>
+                <span class="data-value">${overtimeDays.length} дней</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Время подработок:</span>
+                <span class="data-value">${totalOvertimeTime} мин</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Обычных рабочих дней:</span>
+                <span class="data-value">${regularDays.length} дней</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Время обычной работы:</span>
+                <span class="data-value">${totalRegularTime} мин</span>
+              </div>
+            </div>
+          </div>
+    `;
+    
+    if (overtimeDays.length > 0) {
+      overtimeHTML += `
+          <div class="operation-card">
+            <div class="operation-data">
+              <div class="data-row">
+                <span class="data-label" style="font-weight: bold; color: #ef4444;">Дни подработок:</span>
+                <span class="data-value"></span>
+              </div>
+      `;
+      
+      overtimeDays.forEach(day => {
+        const date = new Date(day.date);
+        overtimeHTML += `
+          <div class="data-row">
+            <span class="data-label">${date.getDate()}.${String(date.getMonth() + 1).padStart(2, '0')}:</span>
+            <span class="data-value">${day.totalTime} мин, ${day.partsCount} деталей</span>
+          </div>
+        `;
+      });
+      
+      overtimeHTML += `
+            </div>
+          </div>
+      `;
+    }
+    
+    overtimeHTML += `
+        </div>
+      </div>
+    `;
+    
+    return overtimeHTML;
+  }
+
+  function generateQualityReport(monthRecords, year, month, monthNames) {
+    const operationStats = {};
+    let totalOperations = 0;
+    let totalTime = 0;
+    
+    monthRecords.forEach(record => {
+      record.entries.forEach(entry => {
+        const key = `${entry.part} - ${entry.operation}`;
+        if (!operationStats[key]) {
+          operationStats[key] = {
+            part: entry.part,
+            operation: entry.operation,
+            count: 0,
+            totalTime: 0,
+            avgTime: 0
+          };
+        }
+        
+        const operationTime = entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        operationStats[key].count += entry.quantity;
+        operationStats[key].totalTime += operationTime;
+        totalOperations += entry.quantity;
+        totalTime += operationTime;
+      });
+    });
+    
+    // Рассчитываем среднее время на операцию
+    Object.values(operationStats).forEach(stat => {
+      stat.avgTime = stat.totalTime / stat.count;
+    });
+    
+    const operationsList = Object.values(operationStats)
+      .sort((a, b) => b.avgTime - a.avgTime);
+    
+    const avgOperationTime = totalTime / totalOperations;
+    
+    let qualityHTML = `
+      <div class="machine-card">
+        <div class="machine-header">АНАЛИЗ КАЧЕСТВА РАБОТЫ - ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="operations-container">
+          <div class="operation-card">
+            <div class="operation-data">
+              <div class="data-row">
+                <span class="data-label">Всего операций:</span>
+                <span class="data-value">${totalOperations}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Общее время:</span>
+                <span class="data-value">${totalTime} мин</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Среднее время на операцию:</span>
+                <span class="data-value">${avgOperationTime.toFixed(1)} мин</span>
+              </div>
+            </div>
+          </div>
+    `;
+    
+    operationsList.forEach(operation => {
+      const efficiency = operation.avgTime <= avgOperationTime ? 'Хорошо' : 'Требует внимания';
+      const efficiencyColor = operation.avgTime <= avgOperationTime ? '#22c55e' : '#f59e0b';
+      
+      qualityHTML += `
+        <div class="operation-card">
+          <div class="operation-data">
+            <div class="data-row">
+              <span class="data-label">${operation.part} - ${operation.operation}:</span>
+              <span class="data-value">${operation.count} шт</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Среднее время:</span>
+              <span class="data-value">${operation.avgTime.toFixed(1)} мин</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Эффективность:</span>
+              <span class="data-value" style="color: ${efficiencyColor};">${efficiency}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    qualityHTML += `
+        </div>
+      </div>
+    `;
+    
+    return qualityHTML;
   }
 
   // Функции для отображения результатов
@@ -1301,7 +1723,14 @@ document.addEventListener('DOMContentLoaded', () => {
   closeReports?.addEventListener('click', () => reportsDialog.close());
   
   reportMonth?.addEventListener('change', (e) => {
-    generateReport(e.target.value);
+    const reportType = document.getElementById('reportType');
+    generateReport(e.target.value, reportType.value);
+  });
+  
+  const reportType = document.getElementById('reportType');
+  reportType?.addEventListener('change', (e) => {
+    const reportMonth = document.getElementById('reportMonth');
+    generateReport(reportMonth.value, e.target.value);
   });
   
   confirmOvertime?.addEventListener('click', () => {
