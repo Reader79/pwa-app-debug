@@ -273,6 +273,33 @@
       </div>
     </dialog>
 
+    <!-- Диалог подтверждения подработки -->
+    <dialog id="overtimeDialog" class="settings-dialog" aria-labelledby="overtimeTitle">
+      <div class="settings-content">
+        <div class="settings-header">
+          <h2 id="overtimeTitle">Подтверждение</h2>
+          <button class="icon-button" id="closeOvertime" aria-label="Закрыть">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="settings-body">
+          <div class="field">
+            <p style="text-align: center; font-size: 18px; margin: 20px 0;">
+              Это подработка?
+            </p>
+          </div>
+          
+          <div class="row" style="margin-top: 20px; justify-content: center;">
+            <button type="button" class="primary" id="confirmOvertime">Да</button>
+            <button type="button" class="secondary" id="cancelOvertime">Нет</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
     <script src="./app.js" defer></script>
   </body>
   </html>

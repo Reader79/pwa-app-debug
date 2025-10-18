@@ -305,6 +305,14 @@ document.addEventListener('DOMContentLoaded', () => {
     showResults(date); // Обновляем отображение
   };
 
+  // Функция показа диалога подработки
+  function showOvertimeDialog() {
+    const overtimeDialog = document.getElementById('overtimeDialog');
+    if (overtimeDialog) {
+      overtimeDialog.showModal();
+    }
+  }
+
   // Функции для отображения результатов
   function showResults(date) {
     console.log('showResults called with date:', date);
@@ -1169,6 +1177,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   closeAddRecord?.addEventListener('click', () => addRecordDialog.close());
   
+  // Обработчики для диалога подработки
+  const overtimeDialog = document.getElementById('overtimeDialog');
+  const closeOvertime = document.getElementById('closeOvertime');
+  const confirmOvertime = document.getElementById('confirmOvertime');
+  const cancelOvertime = document.getElementById('cancelOvertime');
+  
+  closeOvertime?.addEventListener('click', () => overtimeDialog.close());
+  cancelOvertime?.addEventListener('click', () => overtimeDialog.close());
+  
+  confirmOvertime?.addEventListener('click', () => {
+    overtimeDialog.close();
+    // Продолжаем сохранение записи
+    saveRecordEntry();
+  });
+  
   recordDate?.addEventListener('change', updateShiftType);
   recordPart?.addEventListener('change', updateOperationOptions);
   recordOperation?.addEventListener('change', () => {
@@ -1187,7 +1210,8 @@ document.addEventListener('DOMContentLoaded', () => {
   recordQuantity?.addEventListener('input', updateTotalTime);
   
   
-  saveRecord?.addEventListener('click', () => {
+  // Функция сохранения записи (вынесена отдельно для переиспользования)
+  function saveRecordEntry() {
     // Проверяем заполненность полей
     if (!recordMachine.value || !recordPart.value || !recordOperation.value || !recordMachineTime.value || !recordQuantity.value) {
       alert('Заполните все обязательные поля');
@@ -1196,11 +1220,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const date = recordDate.value;
     const shiftType = getShiftType(new Date(date));
-    
-    if (shiftType === 'O') {
-      alert('Нельзя добавлять записи в выходной день');
-      return;
-    }
     
     // Создаем запись из текущих полей
     const part = state.parts.find(p => p.id === recordPart.value);
@@ -1267,6 +1286,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectedDate) {
       showResults(selectedDate);
     }
+  }
+
+  // Обработчик кнопки "Сохранить"
+  saveRecord?.addEventListener('click', () => {
+    const date = recordDate.value;
+    const shiftType = getShiftType(new Date(date));
+    
+    if (shiftType === 'O') {
+      // Показываем диалог подтверждения подработки
+      showOvertimeDialog();
+      return;
+    }
+    
+    // Если не выходной день, сохраняем сразу
+    saveRecordEntry();
   });
 
   // Init
