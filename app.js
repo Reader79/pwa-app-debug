@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Data storage
   const STORAGE_KEY = 'pwa-settings-v1';
+  const LEGACY_STORAGE_KEY = 'pwa-state'; // для совместимости с ранними импортами
   const defaultState = {
     main: { operatorName: '', shiftNumber: 1, baseTime: 600 },
     machines: [],
@@ -67,7 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function loadState(){
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      // Пытаемся загрузить из актуального ключа
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        // Фоллбек на старый ключ (совместимость импорта)
+        raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (raw) {
+          // Мигрируем в новый ключ
+          localStorage.setItem(STORAGE_KEY, raw);
+          localStorage.removeItem(LEGACY_STORAGE_KEY);
+        }
+      }
       if (!raw) return structuredClone(defaultState);
       const s = JSON.parse(raw);
       return { ...structuredClone(defaultState), ...s };
@@ -1947,8 +1958,8 @@ document.addEventListener('DOMContentLoaded', () => {
           state.parts = importData.data.parts || defaultState.parts;
           state.records = importData.data.records || defaultState.records;
           
-          // Сохраняем в localStorage
-          localStorage.setItem('pwa-state', JSON.stringify(state));
+          // Сохраняем в localStorage (единый актуальный ключ)
+          saveState();
           
           // Обновляем UI
           hydrateMain();
