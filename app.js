@@ -386,9 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Рассчитываем максимальный коэффициент
     const coefficients = workDays.map(day => dailyData[day].coefficient);
     const maxCoefficient = Math.max(...coefficients, 1);
-    const maxY = Math.ceil(maxCoefficient + 0.5); // Максимальный показатель + 0.5
+    const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
-    // Создаем подписи для оси Y (коэффициенты)
+    // Создаем подписи для оси Y (коэффициенты) - адаптивные значения
     const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY];
     yLabels.forEach(value => {
       const label = document.createElement('div');
