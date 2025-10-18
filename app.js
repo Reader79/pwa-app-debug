@@ -405,13 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Объявляем workDays и prevWorkDays ДО использования
     const allWorkDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
-    const prevWorkDays = Object.keys(prevDailyData).map(Number).sort((a, b) => a - b);
+    const allPrevWorkDays = Object.keys(prevDailyData).map(Number).sort((a, b) => a - b);
     
-    // КРИВАЯ ТЕКУЩЕГО МЕСЯЦА: только прошедшие дни
+    // КРИВАЯ ТЕКУЩЕГО МЕСЯЦА: только прошедшие дни (обрывается на текущем дне)
     const workDays = allWorkDays.filter(day => {
       const dayData = dailyData[day];
       return dayData.isPast; // Только прошедшие дни
     });
+    
+    // КРИВАЯ ПРЕДЫДУЩЕГО МЕСЯЦА: ВСЕ рабочие дни (полный месяц)
+    const prevWorkDays = allPrevWorkDays; // Все дни предыдущего месяца
     
     // ПРАВИЛО: Прошедшие рабочие дни без записей = коэффициент 1.0
     workDays.forEach(day => {
@@ -475,13 +478,14 @@ document.addEventListener('DOMContentLoaded', () => {
       chartGridContainer.appendChild(line);
     }
     
-    // Вертикальные линии (для дней по X)
-    workDays.forEach((day, index) => {
+    // Вертикальные линии (для дней по X) - используем максимальное количество дней
+    const maxDays = Math.max(workDays.length, prevWorkDays.length);
+    for (let i = 0; i < maxDays; i++) {
       const line = document.createElement('div');
       line.className = 'chart-grid-line vertical';
-      line.style.left = workDays.length > 1 ? `${(index / (workDays.length - 1)) * 100}%` : '50%';
+      line.style.left = maxDays > 1 ? `${(i / (maxDays - 1)) * 100}%` : '50%';
       chartGridContainer.appendChild(line);
-    });
+    }
     
     // Создаем SVG для линии графика
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -507,6 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const points = [];
     const prevPoints = [];
     
+    // КРИВАЯ ТЕКУЩЕГО МЕСЯЦА: только прошедшие дни
     workDays.forEach((day, index) => {
       const data = dailyData[day];
       const coefficient = data.coefficient;
@@ -523,18 +528,23 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         pathData += ` L ${x} ${y}`;
       }
-      // Предыдущий месяц: используем ту же X-координату по порядку рабочего дня
-      if (index < prevWorkDays.length) {
-        const pDay = prevWorkDays[index];
-        const pData = prevDailyData[pDay];
-        const pCoef = pData?.coefficient ?? 0;
-        const py = 100 - (pCoef / maxY) * 100;
-        prevPoints.push({ x, y: py, day: pDay, data: pData, coefficient: pCoef });
-        if (index === 0) {
-          prevPathData += `M ${x} ${py}`;
-        } else {
-          prevPathData += ` L ${x} ${py}`;
-        }
+    });
+    
+    // КРИВАЯ ПРЕДЫДУЩЕГО МЕСЯЦА: ВСЕ рабочие дни (отдельно)
+    prevWorkDays.forEach((day, index) => {
+      const pData = prevDailyData[day];
+      const pCoef = pData?.coefficient ?? 0;
+      
+      // X-координата для предыдущего месяца (все дни)
+      const px = prevWorkDays.length > 1 ? (index / (prevWorkDays.length - 1)) * 100 : 50;
+      const py = 100 - (pCoef / maxY) * 100;
+      
+      prevPoints.push({ x: px, y: py, day, data: pData, coefficient: pCoef });
+      
+      if (index === 0) {
+        prevPathData += `M ${px} ${py}`;
+      } else {
+        prevPathData += ` L ${px} ${py}`;
       }
     });
     
@@ -593,15 +603,16 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней (по оси X) - ЖЕСТКОЕ выравнивание с точками
-    workDays.forEach((day, index) => {
+    // Создаем подписи дней (по оси X) - показываем дни из обеих кривых
+    const allDays = [...new Set([...workDays, ...prevWorkDays])].sort((a, b) => a - b);
+    allDays.forEach((day, index) => {
       const label = document.createElement('div');
       label.className = 'chart-label';
       label.textContent = day;
       label.style.position = 'absolute';
       
-      // ЖЕСТКОЕ ВЫРАВНИВАНИЕ: используем ТЕ ЖЕ координаты что и точки графика
-      const pointX = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50;
+      // Используем максимальное количество дней для позиционирования
+      const pointX = maxDays > 1 ? (index / (maxDays - 1)) * 100 : 50;
       label.style.left = `${pointX}%`;
       label.style.transform = 'translateX(-50%)'; // Центрирование относительно точки
       label.style.textAlign = 'center';
