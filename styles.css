@@ -123,6 +123,24 @@ body{
   text-align: center;
 }
 
+.chart-title div:first-child {
+  margin-bottom: 4px;
+}
+
+#chartMonthsTitle {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+#chartMonthsTitle .prev-month {
+  color: #60a5fa; /* Синий цвет кривой предыдущего месяца */
+  margin-right: 8px;
+}
+
+#chartMonthsTitle .current-month {
+  color: #22c55e; /* Зеленый цвет кривой текущего месяца */
+}
+
 .chart-wrapper {
   position: relative;
   height: 200px;

@@ -328,6 +328,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentYear = today.getFullYear();
     const currentMonth = today.getMonth() + 1;
     
+    // Генерируем название месяцев для заголовка
+    const monthNames = [
+      'январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+      'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+    ];
+    
+    const prevMonthDate = new Date(currentYear, currentMonth - 2, 1);
+    const prevYear = prevMonthDate.getFullYear();
+    const prevMonth = prevMonthDate.getMonth() + 1;
+    
+    const chartMonthsTitle = document.getElementById('chartMonthsTitle');
+    if (chartMonthsTitle) {
+      chartMonthsTitle.innerHTML = `
+        <span class="prev-month">${monthNames[prevMonth - 1]}</span>
+        <span class="current-month">${monthNames[currentMonth - 1]}</span>
+      `;
+    }
+    
     // Получаем все записи за текущий месяц
     const monthRecords = state.records.filter(record => {
       const recordYear = parseInt(record.date.split('-')[0]);
@@ -335,10 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return recordYear === currentYear && recordMonth === currentMonth;
     });
     
-    // Предыдущий месяц
-    const prevMonthDate = new Date(currentYear, currentMonth - 2, 1); // month is 0-based
-    const prevYear = prevMonthDate.getFullYear();
-    const prevMonth = prevMonthDate.getMonth() + 1;
+    // Предыдущий месяц (уже объявлен выше)
     const prevMonthRecords = state.records.filter(record => {
       const recordYear = parseInt(record.date.split('-')[0]);
       const recordMonth = parseInt(record.date.split('-')[1]);
