@@ -184,7 +184,7 @@ body{
   flex: 1;
   position: relative;
   height: 160px;
-  background: linear-gradient(to bottom,
+  background: linear-gradient(to top,
     #ff9999 0%,     /* светлокрасный для 0-0.8 */
     #ff9999 40%,    /* переход к желтому */
     #ffff99 40%,    /* светложелтый для 0.8-1.1 */
