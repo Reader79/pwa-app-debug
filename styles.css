@@ -255,8 +255,8 @@ body{
   padding: 8px 0 0 0;
   width: 100%;
   height: 20px;
-  margin-left: 40px; /* Отступ слева для выравнивания с областью графика */
-  margin-right: 8px; /* Отступ справа */
+  margin-left: 0; /* УБРАН отступ - подписи должны точно совпадать с точками */
+  margin-right: 0;
 }
 
 .chart-label {
@@ -315,8 +315,8 @@ body{
   }
   
   .chart-labels {
-    margin-left: 35px;
-    margin-right: 6px;
+    margin-left: 0; /* УБРАН отступ для мобильных */
+    margin-right: 0;
   }
 }
 
