@@ -313,6 +313,105 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Функции для работы с отчетами
+  function openReportsDialog() {
+    const reportsDialog = document.getElementById('reportsDialog');
+    const reportMonth = document.getElementById('reportMonth');
+    
+    if (reportsDialog && reportMonth) {
+      // Устанавливаем текущий месяц по умолчанию
+      const now = new Date();
+      const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      reportMonth.value = currentMonth;
+      
+      // Генерируем отчет
+      generateReport(currentMonth);
+      
+      reportsDialog.showModal();
+    }
+  }
+
+  function generateReport(monthString) {
+    const reportContent = document.getElementById('reportContent');
+    if (!reportContent) return;
+    
+    const [year, month] = monthString.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    
+    // Находим все записи за месяц
+    const monthRecords = state.records.filter(record => {
+      const recordDate = new Date(record.date);
+      return recordDate >= startDate && recordDate <= endDate;
+    });
+    
+    // Подсчитываем общее время работы
+    let totalWorkTime = 0;
+    let workDays = 0;
+    
+    monthRecords.forEach(record => {
+      record.entries.forEach(entry => {
+        totalWorkTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+      });
+      workDays++;
+    });
+    
+    // Подсчитываем количество смен в месяце
+    let shiftsInMonth = 0;
+    for (let day = 1; day <= endDate.getDate(); day++) {
+      const date = new Date(year, month - 1, day);
+      const shiftType = getShiftType(date);
+      if (shiftType === 'D' || shiftType === 'N') {
+        shiftsInMonth++;
+      }
+    }
+    
+    // Рассчитываем коэффициент выработки
+    const baseTime = state.main.baseTime || 600;
+    const expectedTime = shiftsInMonth * baseTime;
+    const efficiencyCoefficient = expectedTime > 0 ? (totalWorkTime / expectedTime) : 0;
+    
+    // Форматируем отчет
+    const monthNames = [
+      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+    ];
+    
+    reportContent.innerHTML = `
+      <div class="machine-card">
+        <div class="machine-header">ОТЧЕТ ЗА ${monthNames[month - 1].toUpperCase()} ${year}</div>
+        <div class="operations-container">
+          <div class="operation-card">
+            <div class="operation-data">
+              <div class="data-row">
+                <span class="data-label">Отработанных дней:</span>
+                <span class="data-value">${workDays}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Всего смен в месяце:</span>
+                <span class="data-value">${shiftsInMonth}</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Общее время работы:</span>
+                <span class="data-value">${totalWorkTime} мин</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Ожидаемое время:</span>
+                <span class="data-value">${expectedTime} мин</span>
+              </div>
+              <div class="data-row">
+                <span class="data-label">Коэффициент выработки:</span>
+                <span class="data-value" style="color: ${efficiencyCoefficient >= 1 ? '#22c55e' : '#ef4444'}; font-weight: bold;">
+                  ${efficiencyCoefficient.toFixed(3)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   // Функции для отображения результатов
   function showResults(date) {
     console.log('showResults called with date:', date);
@@ -993,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openDataEntry();
   });
   actionTwo?.addEventListener('click', () => {
-    console.log('Действие 2: заглушка');
+    openReportsDialog();
   });
   actionThree?.addEventListener('click', () => {
     console.log('Действие 3: заглушка');
@@ -1193,6 +1292,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   closeOvertime?.addEventListener('click', () => overtimeDialog.close());
   cancelOvertime?.addEventListener('click', () => overtimeDialog.close());
+  
+  // Обработчики для диалога отчетов
+  const reportsDialog = document.getElementById('reportsDialog');
+  const closeReports = document.getElementById('closeReports');
+  const reportMonth = document.getElementById('reportMonth');
+  
+  closeReports?.addEventListener('click', () => reportsDialog.close());
+  
+  reportMonth?.addEventListener('change', (e) => {
+    generateReport(e.target.value);
+  });
   
   confirmOvertime?.addEventListener('click', () => {
     overtimeDialog.close();
