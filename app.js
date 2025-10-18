@@ -381,21 +381,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const date = new Date(currentYear, currentMonth - 1, day);
       const shiftType = getShiftType(date);
       
-      // Учитываем только рабочие дни
-      if (shiftType === 'D' || shiftType === 'N') {
+      // Учитываем только рабочие дни И только завершенные дни
+      if ((shiftType === 'D' || shiftType === 'N') && isWorkDayCompleted(date)) {
         const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         dailyData[day] = {
           date: dateString,
           isWorkDay: true,
-          isPast: date <= today,
-          isFuture: date > today,
+          isPast: true, // Все завершенные дни считаются прошедшими
+          isFuture: false,
           workTime: 0,
           coefficient: 0
         };
       }
     }
     
-    // Инициализируем все дни предыдущего месяца
+    // Инициализируем все дни предыдущего месяца (все завершенные)
     const prevDaysInMonth = new Date(prevYear, prevMonth, 0).getDate();
     for (let day = 1; day <= prevDaysInMonth; day++) {
       const date = new Date(prevYear, prevMonth - 1, day);
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         prevDailyData[day] = {
           date: dateString,
           isWorkDay: true,
-          isPast: true,
+          isPast: true, // Все дни предыдущего месяца завершены
           isFuture: false,
           workTime: 0,
           coefficient: 0
@@ -433,11 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const allWorkDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
     const allPrevWorkDays = Object.keys(prevDailyData).map(Number).sort((a, b) => a - b);
     
-    // КРИВАЯ ТЕКУЩЕГО МЕСЯЦА: только прошедшие дни (обрывается на текущем дне)
-    const workDays = allWorkDays.filter(day => {
-      const dayData = dailyData[day];
-      return dayData.isPast; // Только прошедшие дни
-    });
+    // КРИВАЯ ТЕКУЩЕГО МЕСЯЦА: только завершенные рабочие дни
+    const workDays = allWorkDays; // Уже отфильтрованы в инициализации
     
     // КРИВАЯ ПРЕДЫДУЩЕГО МЕСЯЦА: ВСЕ рабочие дни (полный месяц)
     const prevWorkDays = allPrevWorkDays; // Все дни предыдущего месяца
@@ -768,20 +765,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const isFutureMonth = (year > today.getFullYear()) || 
                          (year === today.getFullYear() && month > (today.getMonth() + 1));
     
-    // Подсчитываем количество рабочих дней
+    // Подсчитываем количество завершенных рабочих дней
     let totalWorkDays = 0;
     for (let day = 1; day <= new Date(year, month, 0).getDate(); day++) {
       const date = new Date(year, month - 1, day);
       const shiftType = getShiftType(date);
       
       if (shiftType === 'D' || shiftType === 'N') {
-        // Для текущего месяца - только дни до текущей даты
-        // Для прошлых месяцев - все рабочие дни
-        if (isCurrentMonth) {
-          if (date <= currentDate) {
-            totalWorkDays++;
-          }
-        } else {
+        // Учитываем только завершенные рабочие дни
+        if (isWorkDayCompleted(date)) {
           totalWorkDays++;
         }
       }
@@ -798,9 +790,9 @@ document.addEventListener('DOMContentLoaded', () => {
       workDays++;
     });
     
-    // Для прошлых месяцев добавляем время за дни без записей (коэффициент 1.0)
+    // Для завершенных дней без записей добавляем базовое время (коэффициент 1.0)
     // НЕ добавляем для будущих месяцев!
-    if (!isCurrentMonth && !isFutureMonth) {
+    if (!isFutureMonth) {
       const daysWithoutRecords = totalWorkDays - workDays;
       totalWorkTime += daysWithoutRecords * (state.main.baseTime || 600);
     }
@@ -1745,6 +1737,37 @@ document.addEventListener('DOMContentLoaded', () => {
     return CYCLE[shiftIdx];
   }
 
+  // Функция для определения завершенности рабочего дня
+  function isWorkDayCompleted(date) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    // Если это будущий день - не завершен
+    if (targetDate > today) {
+      return false;
+    }
+    
+    // Если это прошлый день - всегда завершен
+    if (targetDate < today) {
+      return true;
+    }
+    
+    // Если это сегодня - проверяем время смены
+    const shiftType = getShiftType(date);
+    const currentHour = now.getHours();
+    
+    if (shiftType === 'D') {
+      // Дневная смена 8:00-20:00 - завершена после 20:00
+      return currentHour >= 20;
+    } else if (shiftType === 'N') {
+      // Ночная смена 20:00-8:00 - завершена после 8:00 следующего дня
+      return currentHour >= 8;
+    }
+    
+    return false; // Выходной день
+  }
+
   function renderCalendar(){
     if (!calendar || !monthLabel) return;
     monthLabel.textContent = formatMonth(current);
@@ -1783,12 +1806,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const corner = document.createElement('div'); corner.className='holiday-corner'; cell.appendChild(corner);
       }
       
-      // Добавляем индикатор статуса данных (только для рабочих дней и прошедших дат)
-      const currentDate = new Date();
-      const isPastDate = date < currentDate;
+      // Добавляем индикатор статуса данных (только для завершенных рабочих дней)
       const isWorkDay = type === 'D' || type === 'N';
+      const isCompleted = isWorkDay && isWorkDayCompleted(date);
       
-      if (isPastDate && isWorkDay) {
+      if (isCompleted) {
         // Преобразуем дату в формат YYYY-MM-DD для сравнения с записями
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
