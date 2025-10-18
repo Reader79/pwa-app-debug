@@ -386,8 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxCoefficient = Math.max(...coefficients, 1); // Минимум 1 для избежания деления на 0
     
     // Создаем подписи для оси Y (динамически на основе данных)
-    const maxY = Math.ceil(maxCoefficient * 1.2); // Добавляем 20% сверху
-    const yLabels = [maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0]; // ИСПРАВЛЕНО: инвертированный порядок
+    const maxY = Math.ceil(maxCoefficient + 0.5); // Максимальный показатель + 0.5
+    const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY]; // ИСПРАВЛЕНО: от 0 снизу вверх
     yLabels.forEach(value => {
       const label = document.createElement('div');
       label.className = 'chart-y-label';
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Исправляем расчет позиции точки
       const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50; // Если один день - по центру
-      const y = (coefficient / maxY) * 100; // ИСПРАВЛЕНО: убираем инверсию
+      const y = 100 - (coefficient / maxY) * 100; // ИСПРАВЛЕНО: инверсия для правильного отображения (0 снизу)
       
       points.push({ x, y, day, data, coefficient });
       
