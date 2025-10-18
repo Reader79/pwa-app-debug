@@ -157,27 +157,26 @@ body{
 }
 
 .chart-y-axis {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  position: relative;
   height: 160px;
-  padding: 8px 0;
   min-width: 40px;
   flex-shrink: 0;
+  padding: 0;
 }
 
 .chart-y-label {
+  position: absolute;
+  right: 4px;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   text-align: right;
   line-height: 1;
   white-space: nowrap;
   padding: 2px 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.3);
-  margin-right: 4px; /* Отступ от края */
-  min-width: 24px; /* Минимальная ширина для выравнивания */
+  background: rgba(0, 0, 0, 0.5);
+  min-width: 24px;
 }
 
 .chart-area {

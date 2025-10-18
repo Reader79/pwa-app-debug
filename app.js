@@ -486,35 +486,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxCoefficient = Math.max(...coefficients, ...(prevCoefficients.length ? prevCoefficients : [0]), 1);
     const maxY = maxCoefficient + 0.5; // ИСПРАВЛЕНО: убран Math.ceil, точное значение + 0.5
     
-    // Создаем сетку и подписи для оси Y одновременно
-    // Горизонтальные линии (для коэффициентов по Y) с подписями
+    // Создаем подписи для оси Y (слева от графика) - синхронизированы с сеткой
     const yLabels = [maxY, maxY * 0.75, maxY * 0.5, maxY * 0.25, 0]; // Значения снизу вверх
+    yLabels.forEach((value, i) => {
+      const label = document.createElement('div');
+      label.className = 'chart-y-label';
+      label.textContent = value.toFixed(1);
+      label.style.position = 'absolute';
+      label.style.top = `${i * 25}%`;
+      label.style.transform = 'translateY(-50%)';
+      yAxisContainer.appendChild(label);
+    });
+    
+    // Создаем сетку
+    // Горизонтальные линии (для коэффициентов по Y)
     for (let i = 0; i <= 4; i++) {
-      // Горизонтальная линия сетки
       const line = document.createElement('div');
       line.className = 'chart-grid-line horizontal';
       line.style.top = `${i * 25}%`;
       chartGridContainer.appendChild(line);
-      
-      // Подпись значения Y - помещаем ВНУТРЬ области графика
-      const label = document.createElement('div');
-      label.className = 'chart-y-label-inline';
-      label.textContent = yLabels[i].toFixed(1);
-      label.style.position = 'absolute';
-      label.style.top = `${i * 25}%`;
-      label.style.left = '4px';
-      label.style.transform = 'translateY(-50%)';
-      label.style.fontSize = '10px';
-      label.style.color = 'rgba(255, 255, 255, 0.7)';
-      label.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-      label.style.padding = '2px 4px';
-      label.style.borderRadius = '2px';
-      label.style.zIndex = '5';
-      chartGridContainer.appendChild(label);
     }
-    
-    // Очищаем старый контейнер оси Y (больше не используется)
-    yAxisContainer.innerHTML = '';
     
     // Вертикальные линии (для дней по X) - 31 позиция (максимум дней в месяце)
     for (let i = 1; i <= 31; i++) {
