@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const maxCoefficient = Math.max(...coefficients, 1);
     const maxY = Math.ceil(maxCoefficient + 0.5); // Максимальный показатель + 0.5
     
-    // Создаем подписи для оси Y
+    // Создаем подписи для оси Y (коэффициенты)
     const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY];
     yLabels.forEach(value => {
       const label = document.createElement('div');
@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Создаем подписи дней
+    // Создаем подписи дней (по оси X)
     workDays.forEach((day, index) => {
       const label = document.createElement('div');
       label.className = 'chart-label';
