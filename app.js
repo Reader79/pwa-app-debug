@@ -518,7 +518,9 @@ document.addEventListener('DOMContentLoaded', () => {
     svg.appendChild(path);
     
     // Линия предыдущего месяца (пунктир синего цвета)
-    if (prevPoints.length) {
+    // ПОКАЗЫВАЕМ ТОЛЬКО ЕСЛИ ЕСТЬ РЕАЛЬНЫЕ ДАННЫЕ (хотя бы один коэффициент > 0)
+    const hasPrevData = prevPoints.some(p => p.coefficient > 0);
+    if (prevPoints.length && hasPrevData) {
       const prevPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       prevPath.setAttribute('stroke', '#60a5fa');
       prevPath.setAttribute('stroke-width', '2');
@@ -555,19 +557,21 @@ document.addEventListener('DOMContentLoaded', () => {
       chartPointsContainer.appendChild(pointElement);
     });
     
-    // Точки предыдущего месяца
-    prevPoints.forEach(point => {
-      const pointElement = document.createElement('div');
-      pointElement.className = 'chart-point prev';
-      pointElement.style.left = `${point.x}%`;
-      pointElement.style.top = `${point.y}%`;
-      pointElement.style.position = 'absolute';
-      const valueLabel = document.createElement('div');
-      valueLabel.className = 'chart-point-value';
-      valueLabel.textContent = point.coefficient.toFixed(2);
-      pointElement.appendChild(valueLabel);
-      chartPointsContainer.appendChild(pointElement);
-    });
+    // Точки предыдущего месяца (только если есть данные)
+    if (hasPrevData) {
+      prevPoints.forEach(point => {
+        const pointElement = document.createElement('div');
+        pointElement.className = 'chart-point prev';
+        pointElement.style.left = `${point.x}%`;
+        pointElement.style.top = `${point.y}%`;
+        pointElement.style.position = 'absolute';
+        const valueLabel = document.createElement('div');
+        valueLabel.className = 'chart-point-value';
+        valueLabel.textContent = point.coefficient.toFixed(2);
+        pointElement.appendChild(valueLabel);
+        chartPointsContainer.appendChild(pointElement);
+      });
+    }
     
     // Создаем подписи дней (по оси X) - ЖЕСТКОЕ выравнивание с точками
     workDays.forEach((day, index) => {
