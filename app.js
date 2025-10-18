@@ -380,10 +380,14 @@ document.addEventListener('DOMContentLoaded', () => {
     labelsContainer.innerHTML = '';
     
     const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
-    const maxCoefficient = Math.max(...workDays.map(day => dailyData[day].coefficient), 1);
     
-    // Создаем подписи для оси Y
-    const yLabels = [0, 0.5, 1.0, 1.5, 2.0];
+    // Исправляем расчет максимального коэффициента
+    const coefficients = workDays.map(day => dailyData[day].coefficient);
+    const maxCoefficient = Math.max(...coefficients, 1); // Минимум 1 для избежания деления на 0
+    
+    // Создаем подписи для оси Y (динамически на основе данных)
+    const maxY = Math.ceil(maxCoefficient * 1.2); // Добавляем 20% сверху
+    const yLabels = [0, maxY * 0.25, maxY * 0.5, maxY * 0.75, maxY];
     yLabels.forEach(value => {
       const label = document.createElement('div');
       label.className = 'chart-y-label';
@@ -413,9 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = dailyData[day];
       const coefficient = data.coefficient;
       
-      // Рассчитываем позицию точки
-      const x = (index / (workDays.length - 1)) * 100; // Процент от ширины
-      const y = 100 - (coefficient / maxCoefficient) * 100; // Процент от высоты (инвертированный)
+      // Исправляем расчет позиции точки
+      const x = workDays.length > 1 ? (index / (workDays.length - 1)) * 100 : 50; // Если один день - по центру
+      const y = 100 - (coefficient / maxY) * 100; // Используем maxY вместо maxCoefficient
       
       points.push({ x, y, day, data, coefficient });
       
@@ -452,11 +456,13 @@ document.addEventListener('DOMContentLoaded', () => {
       pointElement.appendChild(valueLabel);
       
       chartPointsContainer.appendChild(pointElement);
-      
-      // Создаем подпись дня
+    });
+    
+    // Создаем подписи дней (отдельно от точек)
+    workDays.forEach(day => {
       const label = document.createElement('div');
       label.className = 'chart-label';
-      label.textContent = point.day;
+      label.textContent = day;
       labelsContainer.appendChild(label);
     });
   }
