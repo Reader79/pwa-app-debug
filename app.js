@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="data-row">
                 <span class="data-label">Коэффициент выработки:</span>
                 <span class="data-value" style="color: ${efficiencyCoefficient >= 1 ? '#22c55e' : '#ef4444'}; font-weight: bold;">
-                  ${efficiencyCoefficient.toFixed(3)}
+                  ${efficiencyCoefficient.toFixed(2)}
                 </span>
               </div>
             </div>
