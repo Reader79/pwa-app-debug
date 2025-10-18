@@ -313,6 +313,104 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Функция для создания графика коэффициента выработки
+  function createEfficiencyChart() {
+    const chartContainer = document.getElementById('efficiencyChart');
+    const labelsContainer = document.getElementById('chartLabels');
+    
+    if (!chartContainer || !labelsContainer) return;
+    
+    // Получаем текущий месяц
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    
+    // Получаем все записи за текущий месяц
+    const monthRecords = state.records.filter(record => {
+      const recordYear = parseInt(record.date.split('-')[0]);
+      const recordMonth = parseInt(record.date.split('-')[1]);
+      return recordYear === currentYear && recordMonth === currentMonth;
+    });
+    
+    // Создаем объект для хранения данных по дням
+    const dailyData = {};
+    
+    // Инициализируем все дни месяца
+    const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth - 1, day);
+      const shiftType = getShiftType(date);
+      
+      // Учитываем только рабочие дни
+      if (shiftType === 'D' || shiftType === 'N') {
+        const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        dailyData[day] = {
+          date: dateString,
+          isWorkDay: true,
+          isPast: date <= today,
+          isFuture: date > today,
+          workTime: 0,
+          coefficient: 0
+        };
+      }
+    }
+    
+    // Заполняем данные из записей
+    monthRecords.forEach(record => {
+      const day = parseInt(record.date.split('-')[2]);
+      if (dailyData[day]) {
+        let dayWorkTime = 0;
+        record.entries.forEach(entry => {
+          dayWorkTime += entry.totalTime || (entry.machineTime + entry.extraTime) * entry.quantity;
+        });
+        dailyData[day].workTime = dayWorkTime;
+        
+        // Рассчитываем коэффициент для дня
+        const baseTime = state.main.baseTime || 600;
+        dailyData[day].coefficient = dayWorkTime / baseTime;
+      }
+    });
+    
+    // Генерируем HTML для графика
+    chartContainer.innerHTML = '';
+    labelsContainer.innerHTML = '';
+    
+    const workDays = Object.keys(dailyData).map(Number).sort((a, b) => a - b);
+    const maxCoefficient = Math.max(...workDays.map(day => dailyData[day].coefficient), 1);
+    
+    workDays.forEach(day => {
+      const data = dailyData[day];
+      const coefficient = data.coefficient;
+      const height = Math.max((coefficient / maxCoefficient) * 100, 2); // Минимум 2% высоты
+      
+      // Создаем столбец
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.height = `${height}%`;
+      
+      // Добавляем классы в зависимости от состояния
+      if (data.isFuture) {
+        bar.classList.add('future');
+      } else if (data.workTime === 0) {
+        bar.classList.add('no-data');
+      }
+      
+      // Создаем подпись со значением
+      const valueLabel = document.createElement('div');
+      valueLabel.className = 'chart-bar-value';
+      valueLabel.textContent = coefficient.toFixed(2);
+      bar.appendChild(valueLabel);
+      
+      chartContainer.appendChild(bar);
+      
+      // Создаем подпись дня
+      const label = document.createElement('div');
+      label.className = 'chart-label';
+      label.textContent = day;
+      labelsContainer.appendChild(label);
+    });
+  }
+
   // Функции для работы с отчетами
   function openReportsDialog() {
     const reportsDialog = document.getElementById('reportsDialog');
@@ -1879,6 +1977,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновляем календарь для обновления индикаторов статуса
     renderCalendar();
     
+    // Обновляем график коэффициента выработки
+    createEfficiencyChart();
+    
     // Обновляем отображение результатов
     if (selectedDate) {
       showResults(selectedDate);
@@ -1896,4 +1997,5 @@ document.addEventListener('DOMContentLoaded', () => {
   bindMain();
   renderMachines();
   renderParts();
+  createEfficiencyChart();
 });
