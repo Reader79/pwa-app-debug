@@ -1,0 +1,18 @@
+# Исключить рабочие файлы и архив
+pwa-app.zip
+decompressedTemplate/
+
+# Включить только отладочную версию
+!debug-version/
+!working-version/
+
+# Стандартные исключения
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
