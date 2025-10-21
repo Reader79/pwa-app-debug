@@ -2261,12 +2261,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Заголовок станка как отдельная строка
       tableBody.push([
         { text: '', style: 'numberCell' },
-        { text: `Станок: ${machine}`, style: 'machineHeader' },
-        { text: '', style: 'operationCell' },
-        { text: '', style: 'timeCell' },
-        { text: '', style: 'timeCell' },
-        { text: '', style: 'timeCell' },
-        { text: '', style: 'timeCell' }
+        { text: `Станок: ${machine}`, style: 'machineHeader', colSpan: 6 },
+        { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }
       ]);
       
       // Записи по станку
@@ -2278,14 +2274,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const quantity = entry.quantity || entry.qty || 0;
         const totalTimeForTask = entry.totalTime || entry.total_time || 0;
         
+        // Формируем значения согласно требованиям
+        const machineExtraTime = extraTime > 0 ? `${machineTime}+${extraTime}` : machineTime.toString();
+        const detailTime = `${machineTime + extraTime} мин.`;
+        const quantityText = entry.isSetup ? '1' : `${quantity} шт.`;
+        const totalTimeText = `${totalTimeForTask} мин.`;
+        
         tableBody.push([
           { text: taskNumber.toString(), style: 'numberCell' },
           { text: partName, style: 'partCell' },
           { text: operation, style: 'operationCell' },
-          { text: machineTime.toString(), style: 'timeCell' },
-          { text: extraTime > 0 ? extraTime.toString() : '-', style: 'timeCell' },
-          { text: quantity > 0 ? quantity.toString() : '-', style: 'timeCell' },
-          { text: totalTimeForTask.toString(), style: 'timeCell' }
+          { text: machineExtraTime, style: 'timeCell' },
+          { text: detailTime, style: 'timeCell' },
+          { text: quantityText, style: 'timeCell' },
+          { text: totalTimeText, style: 'timeCell' }
         ]);
         taskNumber++;
       });
@@ -2299,10 +2301,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { text: '1', style: 'numberCell' },
         { text: 'Тестовая деталь', style: 'partCell' },
         { text: '01', style: 'operationCell' },
-        { text: '60', style: 'timeCell' },
-        { text: '5', style: 'timeCell' },
-        { text: '10', style: 'timeCell' },
-        { text: '605', style: 'timeCell' }
+        { text: '60+5', style: 'timeCell' },
+        { text: '65 мин.', style: 'timeCell' },
+        { text: '10 шт.', style: 'timeCell' },
+        { text: '650 мин.', style: 'timeCell' }
       ]);
       console.log('Добавлена тестовая строка');
     }
@@ -2318,7 +2320,7 @@ document.addEventListener('DOMContentLoaded', () => {
           alignment: 'center'
         },
         {
-          text: `от "${dateStr}" (${shiftStr})`,
+          text: `от ${dateStr} (${shiftStr === 'дневная смена' ? 'Дневная смена' : 'Ночная смена'})`,
           style: 'subheader',
           alignment: 'center',
           margin: [0, 5, 0, 5]
@@ -2334,15 +2336,15 @@ document.addEventListener('DOMContentLoaded', () => {
         {
           table: {
             headerRows: 1,
-            widths: ['8%', '40%', '12%', '12%', '12%', '8%', '8%'],
+            widths: ['8%', '35%', '15%', '15%', '12%', '15%'],
             body: [
               // Заголовки таблицы
               [
                 { text: '№', style: 'tableHeader' },
                 { text: '№ чертежа/детали', style: 'tableHeader' },
                 { text: '№ операции', style: 'tableHeader' },
-                { text: 'Машинное время', style: 'tableHeader' },
-                { text: 'Добавленное время', style: 'tableHeader' },
+                { text: 'Машинное время\nДобавленное время', style: 'tableHeader' },
+                { text: 'Время детали', style: 'tableHeader' },
                 { text: 'Количество', style: 'tableHeader' },
                 { text: 'Общее время', style: 'tableHeader' }
               ],
@@ -2354,8 +2356,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Итоги
         {
-          text: `Общее затраченное время на изготовление деталей за смену: ${totalTime}`,
+          text: `Общее затраченное время на изготовление деталей за смену: ${totalTime} мин.`,
           style: 'summary',
+          alignment: 'right',
           margin: [0, 20, 0, 0]
         }
       ],
@@ -2396,7 +2399,7 @@ document.addEventListener('DOMContentLoaded', () => {
           bold: true,
           fontSize: 9,
           fillColor: '#e8e8e8',
-          alignment: 'left'
+          alignment: 'center'
         },
         summary: {
           fontSize: 12,
@@ -2517,7 +2520,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Вспомогательные функции для форматирования дат
   function formatDateForReport(dateStr) {
     const date = new Date(dateStr);
-    return `${date.getDate()} октября ${date.getFullYear()} г.`;
+    const day = String(date.getDate()).padStart(2, '0');
+    return `«${day}» октября ${date.getFullYear()}г.`;
   }
 
   function formatDateForFilename(dateStr) {
