@@ -1990,6 +1990,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Открытие диалога отправки отчета
   actionThree?.addEventListener('click', () => {
+    console.log('Отправка отчета: открываем диалог');
     sendReportDialog.showModal();
   });
   
