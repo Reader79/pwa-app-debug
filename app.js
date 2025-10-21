@@ -2261,8 +2261,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Заголовок станка
       tableBody.push([
         { text: '', style: 'numberCell' },
-        { text: `Станок: ${machine}`, style: 'machineHeader', colSpan: 8 },
-        { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }
+        { text: `Станок: ${machine}`, style: 'machineHeader', colSpan: 7 },
+        { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }
       ]);
       
       // Записи по станку
@@ -2282,8 +2282,7 @@ document.addEventListener('DOMContentLoaded', () => {
           { text: machineTime.toString(), style: 'timeCell' },
           { text: extraTime > 0 ? extraTime.toString() : '-', style: 'timeCell' },
           { text: quantity > 0 ? quantity.toString() : '-', style: 'timeCell' },
-          { text: totalTimeForTask.toString(), style: 'timeCell' },
-          { text: efficiency, style: 'timeCell' }
+          { text: totalTimeForTask.toString(), style: 'timeCell' }
         ]);
         taskNumber++;
       });
@@ -2300,8 +2299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { text: '60', style: 'timeCell' },
         { text: '5', style: 'timeCell' },
         { text: '10', style: 'timeCell' },
-        { text: '605', style: 'timeCell' },
-        { text: '0.99', style: 'timeCell' }
+        { text: '605', style: 'timeCell' }
       ]);
       console.log('Добавлена тестовая строка');
     }
@@ -2333,18 +2331,17 @@ document.addEventListener('DOMContentLoaded', () => {
         {
           table: {
             headerRows: 1,
-            widths: ['5%', '35%', '10%', '10%', '10%', '10%', '10%', '10%'],
+            widths: ['8%', '40%', '12%', '12%', '12%', '8%', '8%'],
             body: [
               // Заголовки таблицы
               [
                 { text: '№', style: 'tableHeader' },
                 { text: '№ чертежа/детали', style: 'tableHeader' },
                 { text: '№ операции', style: 'tableHeader' },
-                { text: 'Фактическое машинное время', style: 'tableHeader' },
+                { text: 'Машинное время', style: 'tableHeader' },
                 { text: 'Добавленное время', style: 'tableHeader' },
-                { text: 'Количество изготовленных деталей', style: 'tableHeader' },
-                { text: 'Общее время изготовления', style: 'tableHeader' },
-                { text: 'Коэффициент выработки', style: 'tableHeader' }
+                { text: 'Количество', style: 'tableHeader' },
+                { text: 'Общее время', style: 'tableHeader' }
               ],
               ...tableBody
             ]
