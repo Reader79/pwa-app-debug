@@ -2242,7 +2242,8 @@ document.addEventListener('DOMContentLoaded', () => {
           currentY = 20;
         }
         
-        const part = state.parts.find(p => p.name === record.part.replace('Наладка ', ''));
+        const partName = record.part ? record.part.replace('Наладка ', '') : '';
+        const part = state.parts.find(p => p.name === partName);
         const operation = part ? part.operation : '';
         const machineTime = record.machineTime || 0;
         const extraTime = record.extraTime || 0;
@@ -2254,8 +2255,8 @@ document.addEventListener('DOMContentLoaded', () => {
         x = 10;
         const rowData = [
           taskNumber.toString(),
-          record.part,
-          operation,
+          record.part || 'Неизвестная деталь',
+          operation || '-',
           machineTime.toString(),
           extraTime > 0 ? extraTime.toString() : '-',
           quantity > 0 ? quantity.toString() : '-',
