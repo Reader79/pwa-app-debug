@@ -2197,23 +2197,36 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Поля записи:', Object.keys(records[0]));
     }
     
-    // Группируем записи по станкам
-    const recordsByMachine = {};
+    // Извлекаем все entries из записей
+    const allEntries = [];
     records.forEach(record => {
+      if (record.entries && Array.isArray(record.entries)) {
+        allEntries.push(...record.entries);
+      }
+    });
+    
+    console.log('Всего entries:', allEntries.length);
+    if (allEntries.length > 0) {
+      console.log('Первая entry:', allEntries[0]);
+    }
+    
+    // Группируем entries по станкам
+    const recordsByMachine = {};
+    allEntries.forEach(entry => {
       // Проверяем, что у записи есть станок
-      const machine = record.machine || 'Неизвестный станок';
+      const machine = entry.machine || 'Неизвестный станок';
       if (!recordsByMachine[machine]) {
         recordsByMachine[machine] = [];
       }
-      recordsByMachine[machine].push(record);
+      recordsByMachine[machine].push(entry);
     });
     
     console.log('Записи по станкам:', recordsByMachine);
     
     // Подсчитываем общее время
     let totalTime = 0;
-    records.forEach(record => {
-      totalTime += record.totalTime || 0;
+    allEntries.forEach(entry => {
+      totalTime += entry.totalTime || 0;
     });
     
     // Создаем HTML контент
@@ -2278,13 +2291,13 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       
       // Записи по станку
-      recordsByMachine[machine].forEach(record => {
-        const partName = record.part || record.detail || 'Неизвестная деталь';
-        const operation = record.operation || record.operationNumber || '-';
-        const machineTime = record.machineTime || record.machine_time || 0;
-        const extraTime = record.extraTime || record.extra_time || 0;
-        const quantity = record.quantity || record.qty || 0;
-        const totalTimeForTask = record.totalTime || record.total_time || 0;
+      recordsByMachine[machine].forEach(entry => {
+        const partName = entry.part || entry.detail || 'Неизвестная деталь';
+        const operation = entry.operation || entry.operationNumber || '-';
+        const machineTime = entry.machineTime || entry.machine_time || 0;
+        const extraTime = entry.extraTime || entry.extra_time || 0;
+        const quantity = entry.quantity || entry.qty || 0;
+        const totalTimeForTask = entry.totalTime || entry.total_time || 0;
         const efficiency = quantity > 0 && machineTime > 0 ? (quantity * machineTime / totalTimeForTask).toFixed(2) : '0.00';
         
         tableRows += `
