@@ -2340,7 +2340,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
           table: {
             headerRows: 1,
-            widths: ['8%', '35%', '15%', '15%', '12%', '15%'],
+            widths: ['8%', '30%', '12%', '15%', '12%', '10%', '13%'],
             body: [
               // Заголовки таблицы
               [
