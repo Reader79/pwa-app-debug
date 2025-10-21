@@ -1974,9 +1974,97 @@ document.addEventListener('DOMContentLoaded', () => {
   actionTwo?.addEventListener('click', () => {
     openReportsDialog();
   });
+  // Диалог отправки отчета
+  const sendReportDialog = document.getElementById('sendReportDialog');
+  const closeSendReport = document.getElementById('closeSendReport');
+  const cancelSendReport = document.getElementById('cancelSendReport');
+  const confirmSendReport = document.getElementById('confirmSendReport');
+  const sendReportType = document.getElementById('sendReportType');
+  const sendReportDayField = document.getElementById('sendReportDayField');
+  const sendReportMonthField = document.getElementById('sendReportMonthField');
+  const sendReportPeriodFields = document.getElementById('sendReportPeriodFields');
+  const sendReportDay = document.getElementById('sendReportDay');
+  const sendReportMonth = document.getElementById('sendReportMonth');
+  const sendReportPeriodStart = document.getElementById('sendReportPeriodStart');
+  const sendReportPeriodEnd = document.getElementById('sendReportPeriodEnd');
+  
+  // Открытие диалога отправки отчета
   actionThree?.addEventListener('click', () => {
-    console.log('Отправить отчет: функция в разработке');
-    // TODO: Реализовать функцию отправки отчета
+    sendReportDialog.showModal();
+  });
+  
+  // Закрытие диалога
+  closeSendReport?.addEventListener('click', () => sendReportDialog.close());
+  cancelSendReport?.addEventListener('click', () => sendReportDialog.close());
+  
+  // Переключение полей в зависимости от типа отчета
+  sendReportType?.addEventListener('change', () => {
+    const type = sendReportType.value;
+    
+    // Скрываем все поля
+    sendReportDayField.style.display = 'none';
+    sendReportMonthField.style.display = 'none';
+    sendReportPeriodFields.style.display = 'none';
+    
+    // Показываем нужные поля
+    if (type === 'day') {
+      sendReportDayField.style.display = 'block';
+      confirmSendReport.disabled = !sendReportDay.value;
+    } else if (type === 'month') {
+      sendReportMonthField.style.display = 'block';
+      confirmSendReport.disabled = !sendReportMonth.value;
+    } else if (type === 'period') {
+      sendReportPeriodFields.style.display = 'block';
+      confirmSendReport.disabled = !(sendReportPeriodStart.value && sendReportPeriodEnd.value);
+    } else {
+      confirmSendReport.disabled = true;
+    }
+  });
+  
+  // Отслеживание изменений в полях для активации кнопки
+  sendReportDay?.addEventListener('change', () => {
+    confirmSendReport.disabled = !sendReportDay.value;
+  });
+  
+  sendReportMonth?.addEventListener('change', () => {
+    confirmSendReport.disabled = !sendReportMonth.value;
+  });
+  
+  sendReportPeriodStart?.addEventListener('change', () => {
+    confirmSendReport.disabled = !(sendReportPeriodStart.value && sendReportPeriodEnd.value);
+  });
+  
+  sendReportPeriodEnd?.addEventListener('change', () => {
+    confirmSendReport.disabled = !(sendReportPeriodStart.value && sendReportPeriodEnd.value);
+  });
+  
+  // Обработка отправки отчета
+  confirmSendReport?.addEventListener('click', () => {
+    const type = sendReportType.value;
+    let reportData = {
+      type: type,
+      date: null,
+      month: null,
+      periodStart: null,
+      periodEnd: null
+    };
+    
+    if (type === 'day') {
+      reportData.date = sendReportDay.value;
+      console.log('Отправка отчета за день:', reportData.date);
+    } else if (type === 'month') {
+      reportData.month = sendReportMonth.value;
+      console.log('Отправка отчета за месяц:', reportData.month);
+    } else if (type === 'period') {
+      reportData.periodStart = sendReportPeriodStart.value;
+      reportData.periodEnd = sendReportPeriodEnd.value;
+      console.log('Отправка отчета за период:', reportData.periodStart, '-', reportData.periodEnd);
+    }
+    
+    // TODO: Здесь будет логика отправки отчета (например, на email или в Telegram)
+    alert('Функция отправки отчета в разработке.\n\nВыбранные параметры:\n' + JSON.stringify(reportData, null, 2));
+    
+    sendReportDialog.close();
   });
 
   // Функции экспорта/импорта данных
