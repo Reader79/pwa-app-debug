@@ -2192,65 +2192,88 @@ document.addEventListener('DOMContentLoaded', () => {
     const { jsPDF } = window.jspdf;
     console.log('jsPDF загружен:', jsPDF);
     
-    // Создаем простой PDF
-    const doc = new jsPDF();
+    // Создаем PDF с поддержкой кириллицы
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
     console.log('PDF документ создан');
     
-    // Простой заголовок
-    doc.setFontSize(16);
-    doc.text('НАРЯД ЗАДАНИЕ', 20, 20);
+    // Настройка шрифта для кириллицы
+    doc.setFont('helvetica');
+    
+    // Заголовок
+    doc.setFontSize(18);
+    doc.text('NARYAD ZADANIE', 148, 20, { align: 'center' });
     
     // Дата и смена
     doc.setFontSize(12);
     const dateStr = formatDateForReport(date);
-    const shiftStr = shiftType === 'day' ? 'дневная смена' : 'ночная смена';
-    doc.text(`от "${dateStr}" (${shiftStr})`, 20, 30);
+    const shiftStr = shiftType === 'day' ? 'dnevnaya smena' : 'nochnaya smena';
+    doc.text(`ot "${dateStr}" (${shiftStr})`, 148, 30, { align: 'center' });
     
     // Исполнитель
-    doc.text('выполнил: ' + (state.main.userName || 'Пользователь'), 20, 40);
+    const userName = state.main.userName || 'Polzovatel';
+    doc.text('vypolnil: ' + userName, 148, 40, { align: 'center' });
     
-    // Простая таблица
-    doc.setFontSize(10);
-    let currentY = 60;
-    
-    // Заголовки
-    doc.text('№', 20, currentY);
-    doc.text('Деталь', 40, currentY);
-    doc.text('Операция', 100, currentY);
-    doc.text('Время', 140, currentY);
-    doc.text('Кол-во', 170, currentY);
-    
-    currentY += 10;
-    
-    // Данные
-    let taskNumber = 1;
+    // Подготавливаем данные для таблицы
+    const tableData = [];
     let totalTime = 0;
     
+    // Группируем записи по станкам
+    const recordsByMachine = {};
     records.forEach(record => {
-      if (currentY > 250) {
-        doc.addPage();
-        currentY = 20;
+      if (!recordsByMachine[record.machine]) {
+        recordsByMachine[record.machine] = [];
       }
+      recordsByMachine[record.machine].push(record);
+    });
+    
+    Object.keys(recordsByMachine).forEach(machine => {
+      // Добавляем заголовок станка
+      tableData.push(['---', `STANOK: ${machine}`, '---', '---', '---', '---']);
       
-      const machineTime = record.machineTime || 0;
-      const quantity = record.quantity || 0;
-      const totalTimeForTask = record.totalTime || 0;
-      
-      doc.text(taskNumber.toString(), 20, currentY);
-      doc.text(record.part || 'Неизвестная деталь', 40, currentY);
-      doc.text(record.operation || '-', 100, currentY);
-      doc.text(totalTimeForTask.toString(), 140, currentY);
-      doc.text(quantity.toString(), 170, currentY);
-      
-      taskNumber++;
-      currentY += 8;
-      totalTime += totalTimeForTask;
+      recordsByMachine[machine].forEach((record, index) => {
+        const machineTime = record.machineTime || 0;
+        const quantity = record.quantity || 0;
+        const totalTimeForTask = record.totalTime || 0;
+        
+        tableData.push([
+          (tableData.length).toString(),
+          record.part || 'Neizvestnaya detal',
+          record.operation || '-',
+          totalTimeForTask.toString(),
+          quantity.toString(),
+          machineTime.toString()
+        ]);
+        
+        totalTime += totalTimeForTask;
+      });
+    });
+    
+    // Создаем таблицу
+    doc.autoTable({
+      head: [['No', 'Detal', 'Operaciya', 'Obshee vremya', 'Kolichestvo', 'Mashinnoe vremya']],
+      body: tableData,
+      startY: 60,
+      theme: 'grid',
+      headStyles: { fillColor: [200, 200, 200] },
+      styles: { fontSize: 8 },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 }
+      }
     });
     
     // Итоги
-    currentY += 10;
+    const finalY = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(12);
-    doc.text(`Общее время за смену: ${totalTime}`, 20, currentY);
+    doc.text(`Obshee vremya za smenu: ${totalTime}`, 20, finalY);
     
     console.log('PDF сгенерирован успешно');
     return doc;
