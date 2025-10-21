@@ -2219,6 +2219,25 @@ document.addEventListener('DOMContentLoaded', () => {
   recordExtraTime?.addEventListener('input', updateTotalTime);
   recordQuantity?.addEventListener('input', updateTotalTime);
   
+  // Обработчик для чекбокса "Наладка"
+  const recordSetup = document.getElementById('recordSetup');
+  recordSetup?.addEventListener('change', function() {
+    const isSetup = this.checked;
+    
+    // Отключаем/включаем поля в зависимости от состояния чекбокса
+    recordExtraTime.disabled = isSetup;
+    recordQuantity.disabled = isSetup;
+    
+    // Если наладка, принудительно устанавливаем значения
+    if (isSetup) {
+      recordExtraTime.value = '0';  // Дополнительное время всегда 0 при наладке
+      recordQuantity.value = '1';   // Количество деталей всегда 1 при наладке
+    }
+    
+    // Обновляем общее время
+    updateTotalTime();
+  });
+  
   
   // Функция сохранения записи (вынесена отдельно для переиспользования)
   function saveRecordEntry() {
@@ -2234,18 +2253,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Создаем запись из текущих полей
     const part = state.parts.find(p => p.id === recordPart.value);
     const machineTime = parseInt(recordMachineTime.value) || 0;
-    const extraTime = parseInt(recordExtraTime.value) || 0;
-    const quantity = parseInt(recordQuantity.value) || 0;
+    const isSetup = recordSetup.checked;
+    
+    // При наладке дополнительное время всегда 0, количество деталей всегда 1
+    const extraTime = isSetup ? 0 : (parseInt(recordExtraTime.value) || 0);
+    const quantity = isSetup ? 1 : (parseInt(recordQuantity.value) || 0);
+    
+    // Формируем название детали с учетом наладки
+    let partName = part.name;
+    if (isSetup) {
+      partName = `Наладка ${part.name}`;
+    }
+    
     const totalTime = calculateTotalTime(machineTime, extraTime, quantity);
     
     const newEntry = {
       machine: recordMachine.value,
-      part: part.name,
+      part: partName,
       operation: recordOperation.value,
       machineTime: machineTime,
       extraTime: extraTime,
       quantity: quantity,
-      totalTime: totalTime
+      totalTime: totalTime,
+      isSetup: isSetup
     };
     
     // Проверяем режим редактирования
