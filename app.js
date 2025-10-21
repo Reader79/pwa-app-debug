@@ -2314,7 +2314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     return {
-      pageSize: 'A4',
+      pageSize: 'A5',
       pageOrientation: 'landscape',
       content: [
         // Заголовок
@@ -2363,7 +2363,8 @@ document.addEventListener('DOMContentLoaded', () => {
           text: `Общее затраченное время на изготовление деталей за смену: ${totalTime} мин.`,
           style: 'summary',
           alignment: 'right',
-          margin: [0, 20, 0, 0]
+          margin: [0, 20, 0, 0],
+          decoration: 'underline'
         }
       ],
       
