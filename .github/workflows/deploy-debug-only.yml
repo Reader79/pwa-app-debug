@@ -1,8 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy Debug Version Only
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "debug-only" ]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "pages-debug-only"
   cancel-in-progress: false
 
 jobs:
@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-
+          
   deploy:
     environment:
       name: github-pages
