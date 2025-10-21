@@ -2506,8 +2506,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Форматируем месяц для отображения
     const [year, monthNum] = month.split('-');
-    const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 
-                        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const monthNames = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 
+                        'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
     const monthStr = `${monthNames[parseInt(monthNum) - 1]} ${year}г.`;
     const userName = state.main.operatorName || 'Пользователь';
     
