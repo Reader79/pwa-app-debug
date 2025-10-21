@@ -2162,6 +2162,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Определяем тип смены
       const shiftType = getShiftType(new Date(date));
       
+      // Проверяем доступность jsPDF
+      if (typeof window.jspdf === 'undefined') {
+        alert('Библиотека PDF не загружена. Попробуйте перезагрузить страницу.');
+        return;
+      }
+      
       // Генерируем PDF
       const pdf = generateDayReportPDF(date, shiftType, dayRecords);
       
@@ -2170,39 +2176,43 @@ document.addEventListener('DOMContentLoaded', () => {
       
     } catch (error) {
       console.error('Ошибка генерации отчета:', error);
-      alert('Ошибка при генерации отчета');
+      alert('Ошибка при генерации отчета: ' + error.message);
     }
   }
 
   // Функция генерации PDF отчета
   function generateDayReportPDF(date, shiftType, records) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
     
     // Настройки шрифта
-    doc.setFont('helvetica');
+    doc.setFont('helvetica', 'normal');
     
     // Заголовок
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('НАРЯД ЗАДАНИЕ', 105, 20, { align: 'center' });
+    doc.text('НАРЯД ЗАДАНИЕ', 148, 20, { align: 'center' });
     
     // Дата и смена
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     const dateStr = formatDateForReport(date);
     const shiftStr = shiftType === 'day' ? 'дневная смена' : 'ночная смена';
-    doc.text(`от "${dateStr}" (${shiftStr})`, 105, 30, { align: 'center' });
+    doc.text(`от "${dateStr}" (${shiftStr})`, 148, 30, { align: 'center' });
     
     // Исполнитель
-    doc.text('выполнил: ' + (state.main.userName || 'Пользователь'), 105, 40, { align: 'center' });
+    doc.text('выполнил: ' + (state.main.userName || 'Пользователь'), 148, 40, { align: 'center' });
     
     // Заголовки таблицы
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     const startY = 60;
-    const colWidths = [15, 60, 25, 40, 30, 40, 40, 35];
-    const headers = ['№', '№ чертежа/детали', '№ операции', 'Фактическое машинное время', 'Добавленное время', 'Количество изготовленных деталей', 'Общее время изготовления', 'Коэффициент выработки'];
+    const colWidths = [12, 50, 20, 35, 25, 35, 35, 30];
+    const headers = ['№', 'Деталь', 'Оп.', 'Маш.время', 'Доб.время', 'Кол-во', 'Общ.время', 'Коэф.'];
     
     let x = 10;
     headers.forEach((header, index) => {
@@ -2237,7 +2247,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentY += 8;
       
       recordsByMachine[machine].forEach(record => {
-        if (currentY > 250) {
+        if (currentY > 180) {
           doc.addPage();
           currentY = 20;
         }
@@ -2283,17 +2293,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Итоги
-    if (currentY > 250) {
+    if (currentY > 180) {
       doc.addPage();
       currentY = 20;
     }
     
     currentY += 10;
     doc.setFont('helvetica', 'bold');
-    doc.text(`Общее затраченное время на изготовление деталей за смену: ${totalTime}`, 10, currentY);
+    doc.text(`Общее время за смену: ${totalTime}`, 10, currentY);
     currentY += 8;
     const avgEfficiency = validTasks > 0 ? (totalEfficiency / validTasks).toFixed(2) : '0.00';
-    doc.text(`Коэффициент выработки за смену: ${avgEfficiency}`, 10, currentY);
+    doc.text(`Коэффициент выработки: ${avgEfficiency}`, 10, currentY);
     
     return doc;
   }
