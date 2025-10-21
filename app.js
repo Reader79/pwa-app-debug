@@ -2208,6 +2208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Создаем HTML контент
     const htmlContent = createReportHTML(date, shiftType, recordsByMachine, totalTime);
+    console.log('HTML контент создан, длина:', htmlContent.length);
     
     // Создаем временный элемент для рендеринга
     const tempDiv = document.createElement('div');
@@ -2215,7 +2216,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tempDiv.style.position = 'absolute';
     tempDiv.style.left = '-9999px';
     tempDiv.style.top = '-9999px';
+    tempDiv.style.width = '800px';
+    tempDiv.style.height = '600px';
     document.body.appendChild(tempDiv);
+    console.log('Временный элемент добавлен в DOM');
     
     // Настройки для PDF
     const opt = {
@@ -2253,11 +2257,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let tableRows = '';
     let taskNumber = 1;
     
+    console.log('Создаем HTML для машин:', Object.keys(recordsByMachine));
+    
     Object.keys(recordsByMachine).forEach(machine => {
       // Заголовок станка
       tableRows += `
         <tr class="machine-header">
-          <td colspan="6" class="machine-name">Станок: ${machine}</td>
+          <td colspan="8" class="machine-name">Станок: ${machine}</td>
         </tr>
       `;
       
@@ -2287,6 +2293,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
     
+    console.log('Создано строк таблицы:', tableRows.length);
+    
+    // Если нет данных, добавляем тестовую строку
+    if (tableRows.length === 0) {
+      tableRows = `
+        <tr>
+          <td class="number">1</td>
+          <td class="part">Тестовая деталь</td>
+          <td class="operation">01</td>
+          <td class="time">60</td>
+          <td class="extra-time">5</td>
+          <td class="quantity">10</td>
+          <td class="total-time">605</td>
+          <td class="efficiency">0.99</td>
+        </tr>
+      `;
+      console.log('Добавлена тестовая строка');
+    }
+    
     return `
       <!DOCTYPE html>
       <html lang="ru">
@@ -2302,12 +2327,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           
           body {
-            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
             line-height: 1.4;
             color: #000;
             background: #fff;
             padding: 20px;
+            width: 100%;
           }
           
           .report-header {
