@@ -2191,14 +2191,24 @@ document.addEventListener('DOMContentLoaded', () => {
       throw new Error('html2pdf не загружен');
     }
     
+    // Логируем структуру первой записи для диагностики
+    if (records.length > 0) {
+      console.log('Первая запись:', records[0]);
+      console.log('Поля записи:', Object.keys(records[0]));
+    }
+    
     // Группируем записи по станкам
     const recordsByMachine = {};
     records.forEach(record => {
-      if (!recordsByMachine[record.machine]) {
-        recordsByMachine[record.machine] = [];
+      // Проверяем, что у записи есть станок
+      const machine = record.machine || 'Неизвестный станок';
+      if (!recordsByMachine[machine]) {
+        recordsByMachine[machine] = [];
       }
-      recordsByMachine[record.machine].push(record);
+      recordsByMachine[machine].push(record);
     });
+    
+    console.log('Записи по станкам:', recordsByMachine);
     
     // Подсчитываем общее время
     let totalTime = 0;
@@ -2269,12 +2279,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Записи по станку
       recordsByMachine[machine].forEach(record => {
-        const partName = record.part || 'Неизвестная деталь';
-        const operation = record.operation || '-';
-        const machineTime = record.machineTime || 0;
-        const extraTime = record.extraTime || 0;
-        const quantity = record.quantity || 0;
-        const totalTimeForTask = record.totalTime || 0;
+        const partName = record.part || record.detail || 'Неизвестная деталь';
+        const operation = record.operation || record.operationNumber || '-';
+        const machineTime = record.machineTime || record.machine_time || 0;
+        const extraTime = record.extraTime || record.extra_time || 0;
+        const quantity = record.quantity || record.qty || 0;
+        const totalTimeForTask = record.totalTime || record.total_time || 0;
         const efficiency = quantity > 0 && machineTime > 0 ? (quantity * machineTime / totalTimeForTask).toFixed(2) : '0.00';
         
         tableRows += `
