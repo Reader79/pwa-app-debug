@@ -2182,129 +2182,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Функция генерации PDF отчета
   function generateDayReportPDF(date, shiftType, records) {
+    console.log('Начинаем генерацию PDF...');
+    
+    // Проверяем доступность jsPDF
+    if (!window.jspdf) {
+      throw new Error('jsPDF не загружен');
+    }
+    
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
+    console.log('jsPDF загружен:', jsPDF);
     
-    // Настройки шрифта
-    doc.setFont('helvetica', 'normal');
+    // Создаем простой PDF
+    const doc = new jsPDF();
+    console.log('PDF документ создан');
     
-    // Заголовок
+    // Простой заголовок
     doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('НАРЯД ЗАДАНИЕ', 148, 20, { align: 'center' });
+    doc.text('НАРЯД ЗАДАНИЕ', 20, 20);
     
     // Дата и смена
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
     const dateStr = formatDateForReport(date);
     const shiftStr = shiftType === 'day' ? 'дневная смена' : 'ночная смена';
-    doc.text(`от "${dateStr}" (${shiftStr})`, 148, 30, { align: 'center' });
+    doc.text(`от "${dateStr}" (${shiftStr})`, 20, 30);
     
     // Исполнитель
-    doc.text('выполнил: ' + (state.main.userName || 'Пользователь'), 148, 40, { align: 'center' });
+    doc.text('выполнил: ' + (state.main.userName || 'Пользователь'), 20, 40);
     
-    // Заголовки таблицы
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    const startY = 60;
-    const colWidths = [12, 50, 20, 35, 25, 35, 35, 30];
-    const headers = ['№', 'Деталь', 'Оп.', 'Маш.время', 'Доб.время', 'Кол-во', 'Общ.время', 'Коэф.'];
+    // Простая таблица
+    doc.setFontSize(10);
+    let currentY = 60;
     
-    let x = 10;
-    headers.forEach((header, index) => {
-      doc.text(header, x, startY);
-      x += colWidths[index];
-    });
+    // Заголовки
+    doc.text('№', 20, currentY);
+    doc.text('Деталь', 40, currentY);
+    doc.text('Операция', 100, currentY);
+    doc.text('Время', 140, currentY);
+    doc.text('Кол-во', 170, currentY);
     
-    // Линия под заголовками
-    doc.line(10, startY + 3, 280, startY + 3);
+    currentY += 10;
     
-    // Данные таблицы
-    doc.setFont('helvetica', 'normal');
-    let currentY = startY + 10;
+    // Данные
     let taskNumber = 1;
     let totalTime = 0;
-    let totalEfficiency = 0;
-    let validTasks = 0;
     
-    // Группируем записи по станкам
-    const recordsByMachine = {};
     records.forEach(record => {
-      if (!recordsByMachine[record.machine]) {
-        recordsByMachine[record.machine] = [];
+      if (currentY > 250) {
+        doc.addPage();
+        currentY = 20;
       }
-      recordsByMachine[record.machine].push(record);
-    });
-    
-    Object.keys(recordsByMachine).forEach(machine => {
-      // Название станка
-      doc.setFont('helvetica', 'bold');
-      doc.text(`Станок: ${machine}`, 10, currentY);
+      
+      const machineTime = record.machineTime || 0;
+      const quantity = record.quantity || 0;
+      const totalTimeForTask = record.totalTime || 0;
+      
+      doc.text(taskNumber.toString(), 20, currentY);
+      doc.text(record.part || 'Неизвестная деталь', 40, currentY);
+      doc.text(record.operation || '-', 100, currentY);
+      doc.text(totalTimeForTask.toString(), 140, currentY);
+      doc.text(quantity.toString(), 170, currentY);
+      
+      taskNumber++;
       currentY += 8;
-      
-      recordsByMachine[machine].forEach(record => {
-        if (currentY > 180) {
-          doc.addPage();
-          currentY = 20;
-        }
-        
-        const partName = record.part ? record.part.replace('Наладка ', '') : '';
-        const part = state.parts.find(p => p.name === partName);
-        const operation = part ? part.operation : '';
-        const machineTime = record.machineTime || 0;
-        const extraTime = record.extraTime || 0;
-        const quantity = record.quantity || 0;
-        const totalTimeForTask = record.totalTime || 0;
-        const efficiency = quantity > 0 && machineTime > 0 ? (quantity * machineTime / totalTimeForTask).toFixed(2) : '0.00';
-        
-        // Данные строки
-        x = 10;
-        const rowData = [
-          taskNumber.toString(),
-          record.part || 'Неизвестная деталь',
-          operation || '-',
-          machineTime.toString(),
-          extraTime > 0 ? extraTime.toString() : '-',
-          quantity > 0 ? quantity.toString() : '-',
-          totalTimeForTask.toString(),
-          efficiency
-        ];
-        
-        rowData.forEach((data, index) => {
-          doc.text(data, x, currentY);
-          x += colWidths[index];
-        });
-        
-        taskNumber++;
-        currentY += 6;
-        
-        if (quantity > 0) {
-          totalTime += totalTimeForTask;
-          totalEfficiency += parseFloat(efficiency);
-          validTasks++;
-        }
-      });
-      
-      currentY += 5;
+      totalTime += totalTimeForTask;
     });
     
     // Итоги
-    if (currentY > 180) {
-      doc.addPage();
-      currentY = 20;
-    }
-    
     currentY += 10;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Общее время за смену: ${totalTime}`, 10, currentY);
-    currentY += 8;
-    const avgEfficiency = validTasks > 0 ? (totalEfficiency / validTasks).toFixed(2) : '0.00';
-    doc.text(`Коэффициент выработки: ${avgEfficiency}`, 10, currentY);
+    doc.setFontSize(12);
+    doc.text(`Общее время за смену: ${totalTime}`, 20, currentY);
     
+    console.log('PDF сгенерирован успешно');
     return doc;
   }
 
