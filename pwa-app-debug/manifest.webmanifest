@@ -2,8 +2,8 @@
   "name": "Смена+ Debug v0.1b",
   "short_name": "Смена+ Debug",
   "description": "ОТЛАДОЧНАЯ ВЕРСИЯ - Приложение для управления рабочими сменами, календарем и отчетностью",
-  "start_url": "/pwa-app-debug/",
-  "scope": "/pwa-app-debug/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b1220",
@@ -12,7 +12,7 @@
   "lang": "ru",
   "icons": [
     {
-      "src": "/pwa-app-debug/assets/icons/icon.svg",
+      "src": "./assets/icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
