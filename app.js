@@ -2258,11 +2258,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let taskNumber = 1;
     
     Object.keys(recordsByMachine).forEach(machine => {
-      // Заголовок станка как отдельная строка
+      // Заголовок станка как отдельная строка без colSpan
       tableBody.push([
         { text: '', style: 'numberCell' },
-        { text: `Станок: ${machine}`, style: 'machineHeader', colSpan: 6 },
-        { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }
+        { text: `Станок: ${machine}`, style: 'machineHeader' },
+        { text: '', style: 'operationCell' },
+        { text: '', style: 'timeCell' },
+        { text: '', style: 'timeCell' },
+        { text: '', style: 'timeCell' },
+        { text: '', style: 'timeCell' }
       ]);
       
       // Записи по станку
