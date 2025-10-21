@@ -2162,17 +2162,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // Определяем тип смены
       const shiftType = getShiftType(new Date(date));
       
-      // Проверяем доступность jsPDF
-      if (typeof window.jspdf === 'undefined') {
+      // Проверяем доступность html2pdf
+      if (typeof html2pdf === 'undefined') {
         alert('Библиотека PDF не загружена. Попробуйте перезагрузить страницу.');
         return;
       }
       
       // Генерируем PDF
-      const pdf = generateDayReportPDF(date, shiftType, dayRecords);
-      
-      // Предлагаем сохранить или отправить
-      showSaveOrSendDialog(pdf, `Отчет_${formatDateForFilename(date)}.pdf`);
+      generateDayReportPDF(date, shiftType, dayRecords).then(() => {
+        console.log('PDF успешно сгенерирован и сохранен');
+      }).catch(error => {
+        console.error('Ошибка генерации PDF:', error);
+        alert('Ошибка при генерации PDF: ' + error.message);
+      });
       
     } catch (error) {
       console.error('Ошибка генерации отчета:', error);
@@ -2180,46 +2182,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Функция генерации PDF отчета
+  // Функция генерации PDF отчета через HTML
   function generateDayReportPDF(date, shiftType, records) {
-    console.log('Начинаем генерацию PDF...');
+    console.log('Начинаем генерацию PDF через HTML...');
     
-    // Проверяем доступность jsPDF
-    if (!window.jspdf) {
-      throw new Error('jsPDF не загружен');
+    // Проверяем доступность html2pdf
+    if (typeof html2pdf === 'undefined') {
+      throw new Error('html2pdf не загружен');
     }
-    
-    const { jsPDF } = window.jspdf;
-    console.log('jsPDF загружен:', jsPDF);
-    
-    // Создаем PDF с поддержкой кириллицы
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
-    console.log('PDF документ создан');
-    
-    // Настройка шрифта для кириллицы
-    doc.setFont('helvetica');
-    
-    // Заголовок
-    doc.setFontSize(18);
-    doc.text('NARYAD ZADANIE', 148, 20, { align: 'center' });
-    
-    // Дата и смена
-    doc.setFontSize(12);
-    const dateStr = formatDateForReport(date);
-    const shiftStr = shiftType === 'day' ? 'dnevnaya smena' : 'nochnaya smena';
-    doc.text(`ot "${dateStr}" (${shiftStr})`, 148, 30, { align: 'center' });
-    
-    // Исполнитель
-    const userName = state.main.userName || 'Polzovatel';
-    doc.text('vypolnil: ' + userName, 148, 40, { align: 'center' });
-    
-    // Подготавливаем данные для таблицы
-    const tableData = [];
-    let totalTime = 0;
     
     // Группируем записи по станкам
     const recordsByMachine = {};
@@ -2230,53 +2200,220 @@ document.addEventListener('DOMContentLoaded', () => {
       recordsByMachine[record.machine].push(record);
     });
     
+    // Подсчитываем общее время
+    let totalTime = 0;
+    records.forEach(record => {
+      totalTime += record.totalTime || 0;
+    });
+    
+    // Создаем HTML контент
+    const htmlContent = createReportHTML(date, shiftType, recordsByMachine, totalTime);
+    
+    // Создаем временный элемент для рендеринга
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    // Настройки для PDF
+    const opt = {
+      margin: 10,
+      filename: `Отчет_${formatDateForFilename(date)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        letterRendering: true
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'landscape' 
+      }
+    };
+    
+    console.log('Генерируем PDF...');
+    
+    // Генерируем PDF
+    return html2pdf().set(opt).from(tempDiv).save().then(() => {
+      // Удаляем временный элемент
+      document.body.removeChild(tempDiv);
+      console.log('PDF сгенерирован успешно');
+    });
+  }
+
+  // Функция создания HTML шаблона отчета
+  function createReportHTML(date, shiftType, recordsByMachine, totalTime) {
+    const dateStr = formatDateForReport(date);
+    const shiftStr = shiftType === 'day' ? 'дневная смена' : 'ночная смена';
+    const userName = state.main.userName || 'Пользователь';
+    
+    let tableRows = '';
+    let taskNumber = 1;
+    
     Object.keys(recordsByMachine).forEach(machine => {
-      // Добавляем заголовок станка
-      tableData.push(['---', `STANOK: ${machine}`, '---', '---', '---', '---']);
+      // Заголовок станка
+      tableRows += `
+        <tr class="machine-header">
+          <td colspan="6" class="machine-name">Станок: ${machine}</td>
+        </tr>
+      `;
       
-      recordsByMachine[machine].forEach((record, index) => {
+      // Записи по станку
+      recordsByMachine[machine].forEach(record => {
+        const partName = record.part || 'Неизвестная деталь';
+        const operation = record.operation || '-';
         const machineTime = record.machineTime || 0;
+        const extraTime = record.extraTime || 0;
         const quantity = record.quantity || 0;
         const totalTimeForTask = record.totalTime || 0;
+        const efficiency = quantity > 0 && machineTime > 0 ? (quantity * machineTime / totalTimeForTask).toFixed(2) : '0.00';
         
-        tableData.push([
-          (tableData.length).toString(),
-          record.part || 'Neizvestnaya detal',
-          record.operation || '-',
-          totalTimeForTask.toString(),
-          quantity.toString(),
-          machineTime.toString()
-        ]);
-        
-        totalTime += totalTimeForTask;
+        tableRows += `
+          <tr>
+            <td class="number">${taskNumber}</td>
+            <td class="part">${partName}</td>
+            <td class="operation">${operation}</td>
+            <td class="time">${machineTime}</td>
+            <td class="extra-time">${extraTime > 0 ? extraTime : '-'}</td>
+            <td class="quantity">${quantity > 0 ? quantity : '-'}</td>
+            <td class="total-time">${totalTimeForTask}</td>
+            <td class="efficiency">${efficiency}</td>
+          </tr>
+        `;
+        taskNumber++;
       });
     });
     
-    // Создаем таблицу
-    doc.autoTable({
-      head: [['No', 'Detal', 'Operaciya', 'Obshee vremya', 'Kolichestvo', 'Mashinnoe vremya']],
-      body: tableData,
-      startY: 60,
-      theme: 'grid',
-      headStyles: { fillColor: [200, 200, 200] },
-      styles: { fontSize: 8 },
-      columnStyles: {
-        0: { cellWidth: 15 },
-        1: { cellWidth: 60 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 25 },
-        5: { cellWidth: 25 }
-      }
-    });
-    
-    // Итоги
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(12);
-    doc.text(`Obshee vremya za smenu: ${totalTime}`, 20, finalY);
-    
-    console.log('PDF сгенерирован успешно');
-    return doc;
+    return `
+      <!DOCTYPE html>
+      <html lang="ru">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Наряд-задание</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #000;
+            background: #fff;
+            padding: 20px;
+          }
+          
+          .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          
+          .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+          }
+          
+          .report-date {
+            font-size: 16px;
+            margin-bottom: 5px;
+          }
+          
+          .report-performer {
+            font-size: 14px;
+            font-weight: bold;
+          }
+          
+          .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 10px;
+          }
+          
+          .report-table th,
+          .report-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            text-align: center;
+            vertical-align: middle;
+          }
+          
+          .report-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            font-size: 9px;
+          }
+          
+          .machine-header {
+            background-color: #e8e8e8 !important;
+          }
+          
+          .machine-name {
+            font-weight: bold;
+            text-align: left !important;
+            font-size: 11px;
+          }
+          
+          .number { width: 5%; }
+          .part { width: 35%; text-align: left; }
+          .operation { width: 10%; }
+          .time { width: 10%; }
+          .extra-time { width: 10%; }
+          .quantity { width: 10%; }
+          .total-time { width: 10%; }
+          .efficiency { width: 10%; }
+          
+          .report-summary {
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: bold;
+          }
+          
+          .report-summary div {
+            margin-bottom: 5px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="report-header">
+          <div class="report-title">Наряд-задание</div>
+          <div class="report-date">от "${dateStr}" (${shiftStr})</div>
+          <div class="report-performer">выполнил: ${userName}</div>
+        </div>
+        
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th class="number">№</th>
+              <th class="part">№ чертежа/детали</th>
+              <th class="operation">№ операции</th>
+              <th class="time">Фактическое машинное время</th>
+              <th class="extra-time">Добавленное время</th>
+              <th class="quantity">Количество изготовленных деталей</th>
+              <th class="total-time">Общее время изготовления</th>
+              <th class="efficiency">Коэффициент выработки</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+        
+        <div class="report-summary">
+          <div>Общее затраченное время на изготовление деталей за смену: ${totalTime}</div>
+        </div>
+      </body>
+      </html>
+    `;
   }
 
   // Функция показа диалога сохранения/отправки
