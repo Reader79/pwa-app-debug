@@ -2249,7 +2249,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function createPDFDocument(date, shiftType, recordsByMachine, totalTime) {
     const dateStr = formatDateForReport(date);
     const shiftStr = shiftType === 'day' ? 'дневная смена' : 'ночная смена';
-    const userName = state.main.userName || 'Пользователь';
+    const userName = state.main.operatorName || 'Пользователь';
     
     console.log('Создаем PDF для машин:', Object.keys(recordsByMachine));
     
