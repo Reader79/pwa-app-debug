@@ -2051,18 +2051,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (type === 'day') {
       reportData.date = sendReportDay.value;
-      console.log('Отправка отчета за день:', reportData.date);
+      generateAndSendDayReport(reportData.date);
     } else if (type === 'month') {
       reportData.month = sendReportMonth.value;
       console.log('Отправка отчета за месяц:', reportData.month);
+      alert('Отчет за месяц в разработке');
     } else if (type === 'period') {
       reportData.periodStart = sendReportPeriodStart.value;
       reportData.periodEnd = sendReportPeriodEnd.value;
       console.log('Отправка отчета за период:', reportData.periodStart, '-', reportData.periodEnd);
+      alert('Отчет за период в разработке');
     }
-    
-    // TODO: Здесь будет логика отправки отчета (например, на email или в Telegram)
-    alert('Функция отправки отчета в разработке.\n\nВыбранные параметры:\n' + JSON.stringify(reportData, null, 2));
     
     sendReportDialog.close();
   });
@@ -2143,6 +2142,272 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       importStatus.style.display = 'none';
     }, 5000);
+  }
+
+  // Функция генерации и отправки отчета за день
+  function generateAndSendDayReport(date) {
+    try {
+      // Получаем данные за указанную дату
+      const dayRecords = state.records.filter(record => {
+        const recordDate = new Date(record.date);
+        const targetDate = new Date(date);
+        return recordDate.toDateString() === targetDate.toDateString();
+      });
+
+      if (dayRecords.length === 0) {
+        alert('За выбранную дату нет записей');
+        return;
+      }
+
+      // Определяем тип смены
+      const shiftType = getShiftType(new Date(date));
+      
+      // Генерируем PDF
+      const pdf = generateDayReportPDF(date, shiftType, dayRecords);
+      
+      // Предлагаем сохранить или отправить
+      showSaveOrSendDialog(pdf, `Отчет_${formatDateForFilename(date)}.pdf`);
+      
+    } catch (error) {
+      console.error('Ошибка генерации отчета:', error);
+      alert('Ошибка при генерации отчета');
+    }
+  }
+
+  // Функция генерации PDF отчета
+  function generateDayReportPDF(date, shiftType, records) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Настройки шрифта
+    doc.setFont('helvetica');
+    
+    // Заголовок
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('НАРЯД ЗАДАНИЕ', 105, 20, { align: 'center' });
+    
+    // Дата и смена
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    const dateStr = formatDateForReport(date);
+    const shiftStr = shiftType === 'day' ? 'дневная смена' : 'ночная смена';
+    doc.text(`от "${dateStr}" (${shiftStr})`, 105, 30, { align: 'center' });
+    
+    // Исполнитель
+    doc.text('выполнил: ' + (state.main.userName || 'Пользователь'), 105, 40, { align: 'center' });
+    
+    // Заголовки таблицы
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    const startY = 60;
+    const colWidths = [15, 60, 25, 40, 30, 40, 40, 35];
+    const headers = ['№', '№ чертежа/детали', '№ операции', 'Фактическое машинное время', 'Добавленное время', 'Количество изготовленных деталей', 'Общее время изготовления', 'Коэффициент выработки'];
+    
+    let x = 10;
+    headers.forEach((header, index) => {
+      doc.text(header, x, startY);
+      x += colWidths[index];
+    });
+    
+    // Линия под заголовками
+    doc.line(10, startY + 3, 280, startY + 3);
+    
+    // Данные таблицы
+    doc.setFont('helvetica', 'normal');
+    let currentY = startY + 10;
+    let taskNumber = 1;
+    let totalTime = 0;
+    let totalEfficiency = 0;
+    let validTasks = 0;
+    
+    // Группируем записи по станкам
+    const recordsByMachine = {};
+    records.forEach(record => {
+      if (!recordsByMachine[record.machine]) {
+        recordsByMachine[record.machine] = [];
+      }
+      recordsByMachine[record.machine].push(record);
+    });
+    
+    Object.keys(recordsByMachine).forEach(machine => {
+      // Название станка
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Станок: ${machine}`, 10, currentY);
+      currentY += 8;
+      
+      recordsByMachine[machine].forEach(record => {
+        if (currentY > 250) {
+          doc.addPage();
+          currentY = 20;
+        }
+        
+        const part = state.parts.find(p => p.name === record.part.replace('Наладка ', ''));
+        const operation = part ? part.operation : '';
+        const machineTime = record.machineTime || 0;
+        const extraTime = record.extraTime || 0;
+        const quantity = record.quantity || 0;
+        const totalTimeForTask = record.totalTime || 0;
+        const efficiency = quantity > 0 && machineTime > 0 ? (quantity * machineTime / totalTimeForTask).toFixed(2) : '0.00';
+        
+        // Данные строки
+        x = 10;
+        const rowData = [
+          taskNumber.toString(),
+          record.part,
+          operation,
+          machineTime.toString(),
+          extraTime > 0 ? extraTime.toString() : '-',
+          quantity > 0 ? quantity.toString() : '-',
+          totalTimeForTask.toString(),
+          efficiency
+        ];
+        
+        rowData.forEach((data, index) => {
+          doc.text(data, x, currentY);
+          x += colWidths[index];
+        });
+        
+        taskNumber++;
+        currentY += 6;
+        
+        if (quantity > 0) {
+          totalTime += totalTimeForTask;
+          totalEfficiency += parseFloat(efficiency);
+          validTasks++;
+        }
+      });
+      
+      currentY += 5;
+    });
+    
+    // Итоги
+    if (currentY > 250) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    currentY += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Общее затраченное время на изготовление деталей за смену: ${totalTime}`, 10, currentY);
+    currentY += 8;
+    const avgEfficiency = validTasks > 0 ? (totalEfficiency / validTasks).toFixed(2) : '0.00';
+    doc.text(`Коэффициент выработки за смену: ${avgEfficiency}`, 10, currentY);
+    
+    return doc;
+  }
+
+  // Функция показа диалога сохранения/отправки
+  function showSaveOrSendDialog(pdf, filename) {
+    const saveOrSendDialog = document.createElement('div');
+    saveOrSendDialog.className = 'save-send-dialog';
+    saveOrSendDialog.innerHTML = `
+      <div class="save-send-content">
+        <h3>Отчет готов!</h3>
+        <p>Выберите действие:</p>
+        <div class="save-send-buttons">
+          <button class="primary" id="saveReport">💾 Сохранить на устройстве</button>
+          <button class="secondary" id="sendReport">📤 Отправить</button>
+          <button class="secondary" id="cancelReport">❌ Отмена</button>
+        </div>
+      </div>
+    `;
+    
+    // Добавляем стили
+    const style = document.createElement('style');
+    style.textContent = `
+      .save-send-dialog {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .save-send-content {
+        background: var(--bg-primary);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 400px;
+        text-align: center;
+        border: 1px solid var(--border-primary);
+      }
+      .save-send-content h3 {
+        margin: 0 0 16px 0;
+        color: var(--text-primary);
+      }
+      .save-send-content p {
+        margin: 0 0 20px 0;
+        color: var(--text-secondary);
+      }
+      .save-send-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .save-send-buttons button {
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(saveOrSendDialog);
+    
+    // Обработчики событий
+    document.getElementById('saveReport').addEventListener('click', () => {
+      pdf.save(filename);
+      document.body.removeChild(saveOrSendDialog);
+      document.head.removeChild(style);
+    });
+    
+    document.getElementById('sendReport').addEventListener('click', () => {
+      // Создаем blob для отправки
+      const pdfBlob = pdf.output('blob');
+      
+      // Проверяем поддержку Web Share API
+      if (navigator.share) {
+        navigator.share({
+          title: 'Отчет за день',
+          text: `Отчет за ${formatDateForReport(filename.replace('Отчет_', '').replace('.pdf', ''))}`,
+          files: [new File([pdfBlob], filename, { type: 'application/pdf' })]
+        }).catch(err => {
+          console.log('Ошибка отправки:', err);
+          // Fallback - скачиваем файл
+          pdf.save(filename);
+        });
+      } else {
+        // Fallback для браузеров без поддержки Web Share API
+        alert('Ваш браузер не поддерживает отправку файлов. Файл будет сохранен.');
+        pdf.save(filename);
+      }
+      
+      document.body.removeChild(saveOrSendDialog);
+      document.head.removeChild(style);
+    });
+    
+    document.getElementById('cancelReport').addEventListener('click', () => {
+      document.body.removeChild(saveOrSendDialog);
+      document.head.removeChild(style);
+    });
+  }
+
+  // Вспомогательные функции для форматирования дат
+  function formatDateForReport(dateStr) {
+    const date = new Date(dateStr);
+    return `${date.getDate()} октября ${date.getFullYear()} г.`;
+  }
+
+  function formatDateForFilename(dateStr) {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   // Обработчики событий для экспорта/импорта
