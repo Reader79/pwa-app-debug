@@ -2219,6 +2219,25 @@ document.addEventListener('DOMContentLoaded', () => {
   recordExtraTime?.addEventListener('input', updateTotalTime);
   recordQuantity?.addEventListener('input', updateTotalTime);
   
+  // Обработчик для чекбокса "Наладка"
+  const recordSetup = document.getElementById('recordSetup');
+  recordSetup?.addEventListener('change', function() {
+    const isSetup = this.checked;
+    
+    // Отключаем/включаем поля в зависимости от состояния чекбокса
+    recordExtraTime.disabled = isSetup;
+    recordQuantity.disabled = isSetup;
+    
+    // Если наладка, устанавливаем значения по умолчанию
+    if (isSetup) {
+      recordExtraTime.value = '0';
+      recordQuantity.value = '1';
+    }
+    
+    // Обновляем общее время
+    updateTotalTime();
+  });
+  
   
   // Функция сохранения записи (вынесена отдельно для переиспользования)
   function saveRecordEntry() {
@@ -2236,16 +2255,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const machineTime = parseInt(recordMachineTime.value) || 0;
     const extraTime = parseInt(recordExtraTime.value) || 0;
     const quantity = parseInt(recordQuantity.value) || 0;
+    const isSetup = recordSetup.checked;
+    
+    // Формируем название детали с учетом наладки
+    let partName = part.name;
+    if (isSetup) {
+      partName = `Наладка ${part.name}`;
+    }
+    
     const totalTime = calculateTotalTime(machineTime, extraTime, quantity);
     
     const newEntry = {
       machine: recordMachine.value,
-      part: part.name,
+      part: partName,
       operation: recordOperation.value,
       machineTime: machineTime,
       extraTime: extraTime,
       quantity: quantity,
-      totalTime: totalTime
+      totalTime: totalTime,
+      isSetup: isSetup
     };
     
     // Проверяем режим редактирования
