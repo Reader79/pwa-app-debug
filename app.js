@@ -2324,14 +2324,19 @@ document.addEventListener('DOMContentLoaded', () => {
           alignment: 'center'
         },
         {
-          text: `от ${dateStr} (${shiftStr === 'дневная смена' ? 'Дневная смена' : 'Ночная смена'})`,
-          style: 'subheader',
+          text: [
+            { text: 'от ', style: 'subheader' },
+            { text: dateStr, style: 'subheader', decoration: 'underline' },
+            { text: ` (${shiftStr === 'дневная смена' ? 'Дневная смена' : 'Ночная смена'})`, style: 'subheader' }
+          ],
           alignment: 'center',
           margin: [0, 5, 0, 5]
         },
         {
-          text: `выполнил: ${userName}`,
-          style: 'subheader',
+          text: [
+            { text: 'выполнил: ', style: 'subheader' },
+            { text: userName, style: 'subheader', decoration: 'underline' }
+          ],
           alignment: 'center',
           margin: [0, 0, 0, 20]
         },
@@ -2340,7 +2345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
           table: {
             headerRows: 1,
-            widths: ['8%', '30%', '12%', '15%', '12%', '10%', '13%'],
+            widths: ['5%', '35%', '10%', '18%', '12%', '10%', '10%'],
             body: [
               // Заголовки таблицы
               [
