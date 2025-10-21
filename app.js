@@ -1975,7 +1975,8 @@ document.addEventListener('DOMContentLoaded', () => {
     openReportsDialog();
   });
   actionThree?.addEventListener('click', () => {
-    console.log('Действие 3: заглушка');
+    console.log('Отправить отчет: функция в разработке');
+    // TODO: Реализовать функцию отправки отчета
   });
 
   // Функции экспорта/импорта данных
