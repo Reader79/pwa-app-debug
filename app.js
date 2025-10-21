@@ -2258,11 +2258,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let taskNumber = 1;
     
     Object.keys(recordsByMachine).forEach(machine => {
-      // Заголовок станка
+      // Заголовок станка как отдельная строка
       tableBody.push([
         { text: '', style: 'numberCell' },
-        { text: `Станок: ${machine}`, style: 'machineHeader', colSpan: 7 },
-        { text: '' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }
+        { text: `Станок: ${machine}`, style: 'machineHeader' },
+        { text: '', style: 'operationCell' },
+        { text: '', style: 'timeCell' },
+        { text: '', style: 'timeCell' },
+        { text: '', style: 'timeCell' },
+        { text: '', style: 'timeCell' }
       ]);
       
       // Записи по станку
@@ -2273,7 +2277,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const extraTime = entry.extraTime || entry.extra_time || 0;
         const quantity = entry.quantity || entry.qty || 0;
         const totalTimeForTask = entry.totalTime || entry.total_time || 0;
-        const efficiency = quantity > 0 && machineTime > 0 ? (quantity * machineTime / totalTimeForTask).toFixed(2) : '0.00';
         
         tableBody.push([
           { text: taskNumber.toString(), style: 'numberCell' },
