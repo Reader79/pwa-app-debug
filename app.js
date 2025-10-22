@@ -2221,7 +2221,8 @@ document.addEventListener('DOMContentLoaded', () => {
             machineTime: entry.machineTime || 0,
             extraTime: entry.extraTime || 0,
             quantity: 0,
-            totalTime: 0
+            totalTime: 0,
+            isSetup: entry.isSetup || false
           };
         }
         
@@ -2392,12 +2393,18 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Записи по станку
       recordsByMachine[machine].forEach(entry => {
-        const partName = entry.part || entry.detail || 'Неизвестная деталь';
+        let partName = entry.part || entry.detail || 'Неизвестная деталь';
         const operation = entry.operation || entry.operationNumber || '-';
         const machineTime = entry.machineTime || entry.machine_time || 0;
         const extraTime = entry.extraTime || entry.extra_time || 0;
         const quantity = entry.quantity || entry.qty || 0;
         const totalTimeForTask = entry.totalTime || entry.total_time || 0;
+        
+        // Для записей наладки извлекаем оригинальное название детали
+        if (entry.isSetup && partName.startsWith('Наладка ')) {
+          const originalPartName = partName.replace('Наладка ', '');
+          partName = `Наладка ${originalPartName}`;
+        }
         
         // Формируем значения согласно требованиям
         const machineExtraTime = extraTime > 0 ? `${machineTime}+${extraTime}` : machineTime.toString();
@@ -2581,7 +2588,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Формируем значения согласно требованиям
       const machineExtraTime = extraTime > 0 ? `${machineTime}+${extraTime}` : machineTime.toString();
       const detailTime = `${machineTime + extraTime} мин.`;
-      const quantityText = item.part.startsWith('Наладка ') ? '1' : `${quantity} шт.`;
+      const quantityText = item.isSetup ? '1' : `${quantity} шт.`;
       const totalTimeText = `${totalTimeForTask} мин.`;
       
       tableBody.push([
