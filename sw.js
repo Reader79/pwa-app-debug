@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v60';
+const CACHE_VERSION = 'v61';
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 const PRECACHE = `precache-${CACHE_VERSION}`;
 
@@ -127,36 +127,58 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Для статических файлов: агрессивно обновляем из сети
+  // Для статических файлов: проверяем, внешний ли это ресурс
   event.respondWith((async () => {
-    try {
-      // Всегда пытаемся получить свежую версию из сети
-      const response = await fetch(request, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
-      
-      // Обновляем кэш с новой версией
-      const cache = await caches.open(RUNTIME_CACHE);
-      cache.put(request, response.clone());
-      
-      console.log('SW: Обновлен статический файл из сети:', request.url);
-      return response;
-    } catch {
-      // Если нет сети, используем кэшированную версию
+    const isExternalResource = !request.url.startsWith(self.location.origin);
+    
+    if (isExternalResource) {
+      // Для внешних ресурсов используем стандартную стратегию кэширования
       const cached = await caches.match(request);
       if (cached) {
-        console.log('SW: Используем кэшированную версию:', request.url);
+        console.log('SW: Используем кэшированную версию внешнего ресурса:', request.url);
         return cached;
       }
       
-      // Нет сети и нет в кэше
-      console.log('SW: Нет кэшированной версии:', request.url);
-      return Response.error();
+      try {
+        const response = await fetch(request);
+        const cache = await caches.open(RUNTIME_CACHE);
+        cache.put(request, response.clone());
+        console.log('SW: Кэширован внешний ресурс:', request.url);
+        return response;
+      } catch {
+        console.log('SW: Ошибка загрузки внешнего ресурса:', request.url);
+        return Response.error();
+      }
+    } else {
+      // Для внутренних ресурсов используем агрессивное обновление
+      try {
+        const response = await fetch(request, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        
+        // Обновляем кэш с новой версией
+        const cache = await caches.open(RUNTIME_CACHE);
+        cache.put(request, response.clone());
+        
+        console.log('SW: Обновлен внутренний файл из сети:', request.url);
+        return response;
+      } catch {
+        // Если нет сети, используем кэшированную версию
+        const cached = await caches.match(request);
+        if (cached) {
+          console.log('SW: Используем кэшированную версию внутреннего файла:', request.url);
+          return cached;
+        }
+        
+        // Нет сети и нет в кэше
+        console.log('SW: Нет кэшированной версии внутреннего файла:', request.url);
+        return Response.error();
+      }
     }
   })());
 });
