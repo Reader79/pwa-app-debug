@@ -2913,24 +2913,68 @@ document.addEventListener('DOMContentLoaded', () => {
   
 
 
-  // Register Service Worker
+  // Register Service Worker с улучшенной проверкой обновлений
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const registration = await navigator.serviceWorker.register('./sw.js?v=2025-10-18', {
+        // Принудительно очищаем кэш перед регистрацией
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+
+        const registration = await navigator.serviceWorker.register('./sw.js?v=' + Date.now(), {
           updateViaCache: 'none'
         });
         console.log('SW registered successfully');
+
+        // Принудительная проверка обновлений при запуске
+        const forceUpdate = async () => {
+          try {
+            console.log('Принудительная проверка обновлений...');
+            
+            // Принудительно обновляем SW
+            await registration.update();
+            
+            // Принудительно очищаем кэш и перезагружаем ресурсы
+            if (registration.active) {
+              registration.active.postMessage({ type: 'FORCE_UPDATE' });
+            }
+            
+            // Принудительная перезагрузка через 2 секунды если есть обновления
+            setTimeout(() => {
+              if (registration.waiting) {
+                console.log('Обновление найдено, принудительная перезагрузка...');
+                window.location.reload();
+              }
+            }, 2000);
+            
+          } catch (error) {
+            console.error('Ошибка принудительного обновления:', error);
+          }
+        };
 
         // Моментально активируем новое обновление, как только оно установилось
         registration.addEventListener('updatefound', () => {
           const sw = registration.installing;
           if (!sw) return;
+          
+          console.log('Найдено обновление SW, устанавливаем...');
+          
           sw.addEventListener('statechange', () => {
             if (sw.state === 'installed') {
+              console.log('SW установлен, активируем...');
+              
               // Если уже есть контроллер, значит это обновление
               if (navigator.serviceWorker.controller) {
+                console.log('Активируем новое обновление...');
                 registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+                
+                // Принудительная перезагрузка через 1 секунду
+                setTimeout(() => {
+                  console.log('Принудительная перезагрузка после обновления...');
+                  window.location.reload();
+                }, 1000);
               }
             }
           });
@@ -2938,28 +2982,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Перезагружаем вкладку, когда новый SW берёт контроль
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('SW контроллер изменился, перезагружаем...');
           window.location.reload();
         });
 
-        // Триггеры проверки обновлений
-        const askUpdate = () => registration.update();
+        // Более агрессивные триггеры проверки обновлений
+        const askUpdate = () => {
+          console.log('Проверка обновлений...');
+          registration.update();
+        };
+        
         window.addEventListener('focus', askUpdate);
         window.addEventListener('online', askUpdate);
         document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'visible') askUpdate();
+          if (document.visibilityState === 'visible') {
+            console.log('Приложение стало видимым, проверяем обновления...');
+            askUpdate();
+          }
         });
-        setInterval(askUpdate, 5 * 60 * 1000);
+        
+        // Проверяем обновления каждую минуту вместо каждых 5 минут
+        setInterval(askUpdate, 1 * 60 * 1000);
 
         // Сообщения от SW как запасной канал
         navigator.serviceWorker.addEventListener('message', (event) => {
           const msg = event.data || {};
+          console.log('Получено сообщение от SW:', msg);
+          
           if (msg.type === 'SW_UPDATED' || msg.type === 'FORCE_RELOAD') {
+            console.log('Принудительная перезагрузка по сообщению SW...');
+            window.location.reload();
+          }
+          
+          if (msg.type === 'CACHE_UPDATED') {
+            console.log('Кэш обновлен, перезагружаем страницу...');
             window.location.reload();
           }
         });
 
-        // Принудительная первичная проверка
-        askUpdate();
+        // Принудительная первичная проверка сразу после регистрации
+        setTimeout(forceUpdate, 1000);
+        
+        // Дополнительная проверка через 5 секунд
+        setTimeout(forceUpdate, 5000);
+        
+        // Еще одна проверка через 30 секунд
+        setTimeout(forceUpdate, 30000);
+
       } catch (err) {
         console.warn('SW registration failed', err);
       }

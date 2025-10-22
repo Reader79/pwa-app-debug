@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инструкция по настройке отладочного репозитория</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #059669;
+            margin-top: 30px;
+        }
+        .step {
+            background: #f0fdf4;
+            border-left: 4px solid #059669;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #fef2f2;
+            border-left: 4px solid #dc2626;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #1d4ed8;
+        }
+        .success {
+            background: #f0fdf4;
+            border: 2px solid #059669;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Инструкция по настройке отладочного репозитория</h1>
+        
+        <div class="warning">
+            <strong>⚠️ ВАЖНО:</strong> Эту инструкцию нужно выполнить только один раз для создания отладочного репозитория.
+        </div>
+
+        <h2>Шаг 1: Создайте новый репозиторий на GitHub</h2>
+        <div class="step">
+            <ol>
+                <li>Нажмите на кнопку ниже, чтобы перейти на страницу создания репозитория:</li>
+            </ol>
+            <a href="https://github.com/new" target="_blank" class="button">➕ Создать репозиторий</a>
+            
+            <ol start="2">
+                <li><strong>Repository name:</strong> <code>pwa-app-debug</code></li>
+                <li><strong>Description:</strong> <code>PWA Debug Version - For development and testing</code></li>
+                <li><strong>Visibility:</strong> Public (публичный) ✅</li>
+                <li><strong>НЕ добавляйте</strong> README, .gitignore или LICENSE ❌</li>
+                <li>Нажмите <strong>"Create repository"</strong></li>
+            </ol>
+        </div>
+
+        <h2>Шаг 2: Загрузите код в новый репозиторий</h2>
+        <div class="step">
+            <p>Откройте терминал (PowerShell) в папке <code>G:\PWA</code> и выполните:</p>
+            <div class="code-block">
+cd G:\PWA<br>
+git checkout debug-only<br>
+git remote add debug https://github.com/Reader79/pwa-app-debug.git<br>
+git push debug debug-only:main
+            </div>
+            <p><strong>Или</strong> просто запустите готовый скрипт:</p>
+            <div class="code-block">
+.\setup-debug-repo.ps1
+            </div>
+        </div>
+
+        <h2>Шаг 3: Настройте GitHub Pages</h2>
+        <div class="step">
+            <ol>
+                <li>Перейдите в настройки репозитория:</li>
+            </ol>
+            <a href="https://github.com/Reader79/pwa-app-debug/settings/pages" target="_blank" class="button">⚙️ Настройки GitHub Pages</a>
+            
+            <ol start="2">
+                <li>В разделе <strong>Source</strong> выберите:</li>
+                <ul>
+                    <li><strong>Branch:</strong> <code>main</code></li>
+                    <li><strong>Folder:</strong> <code>/ (root)</code></li>
+                </ul>
+                <li>Нажмите <strong>"Save"</strong></li>
+            </ol>
+        </div>
+
+        <h2>Шаг 4: Проверьте результат</h2>
+        <div class="step">
+            <p>Подождите 1-2 минуты, пока GitHub Pages развернет сайт, затем перейдите по ссылке:</p>
+            <a href="https://reader79.github.io/pwa-app-debug/" target="_blank" class="button">🔍 Открыть отладочную версию</a>
+        </div>
+
+        <div class="success">
+            <h2>✅ Готово!</h2>
+            <p>Теперь у вас есть две версии приложения:</p>
+            <ul>
+                <li><strong>Рабочая версия:</strong> <a href="https://reader79.github.io/pwa-app/" target="_blank">https://reader79.github.io/pwa-app/</a></li>
+                <li><strong>Отладочная версия:</strong> <a href="https://reader79.github.io/pwa-app-debug/" target="_blank">https://reader79.github.io/pwa-app-debug/</a></li>
+            </ul>
+        </div>
+
+        <h2>📝 Дальнейшая работа</h2>
+        <div class="step">
+            <p>Для обновления отладочной версии в будущем:</p>
+            <div class="code-block">
+cd G:\PWA<br>
+git checkout debug-only<br>
+# Внесите изменения в файлы<br>
+git add .<br>
+git commit -m "Описание изменений"<br>
+git push debug debug-only:main
+            </div>
+        </div>
+    </div>
+</body>
+</html>

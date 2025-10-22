@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v59';
+const CACHE_VERSION = 'v60';
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 const PRECACHE = `precache-${CACHE_VERSION}`;
 
@@ -48,14 +48,42 @@ self.addEventListener('activate', (event) => {
 // Слушаем сообщения от клиентов
 self.addEventListener('message', (event) => {
   const msg = event.data || {};
+  
   if (msg.type === 'SKIP_WAITING') {
+    console.log('SW: Получена команда SKIP_WAITING');
     self.skipWaiting();
     return;
   }
+  
   if (msg.type === 'CHECK_UPDATE') {
+    console.log('SW: Принудительное обновление кэша');
     // Принудительно обновляем кэш предзагруженных ресурсов
     event.waitUntil(
-      caches.open(PRECACHE).then(cache => cache.addAll(ASSETS))
+      caches.open(PRECACHE).then(cache => {
+        // Очищаем старый кэш и загружаем новый
+        return cache.addAll(ASSETS);
+      })
+    );
+  }
+  
+  if (msg.type === 'FORCE_UPDATE') {
+    console.log('SW: Принудительное обновление всех ресурсов');
+    event.waitUntil(
+      (async () => {
+        // Очищаем все кэши
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        
+        // Создаем новый кэш с обновленными ресурсами
+        const newCache = await caches.open(PRECACHE);
+        await newCache.addAll(ASSETS);
+        
+        // Уведомляем всех клиентов об обновлении
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+          client.postMessage({ type: 'CACHE_UPDATED' });
+        });
+      })()
     );
   }
 });
@@ -70,15 +98,28 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
-  // Для навигации: сначала сеть, затем кэш с фолбэком на index.html
+  // Для навигации: агрессивно обновляем из сети
   if (isHtmlRequest(request)) {
     event.respondWith((async () => {
       try {
-        const response = await fetch(request);
+        // Всегда пытаемся получить свежую версию из сети
+        const response = await fetch(request, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        
+        // Обновляем кэш с новой версией
         const cache = await caches.open(RUNTIME_CACHE);
         cache.put(request, response.clone());
+        
+        console.log('SW: Обновлен HTML из сети');
         return response;
       } catch {
+        console.log('SW: Используем кэшированную версию HTML');
         const cache = await caches.open(PRECACHE);
         return (await cache.match('/pwa-app/index.html')) || Response.error();
       }
@@ -86,17 +127,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Для статических файлов: сначала кэш, потом сеть с докешированием
+  // Для статических файлов: агрессивно обновляем из сети
   event.respondWith((async () => {
-    const cached = await caches.match(request);
-    if (cached) return cached;
     try {
-      const response = await fetch(request);
+      // Всегда пытаемся получить свежую версию из сети
+      const response = await fetch(request, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      // Обновляем кэш с новой версией
       const cache = await caches.open(RUNTIME_CACHE);
       cache.put(request, response.clone());
+      
+      console.log('SW: Обновлен статический файл из сети:', request.url);
       return response;
     } catch {
+      // Если нет сети, используем кэшированную версию
+      const cached = await caches.match(request);
+      if (cached) {
+        console.log('SW: Используем кэшированную версию:', request.url);
+        return cached;
+      }
+      
       // Нет сети и нет в кэше
+      console.log('SW: Нет кэшированной версии:', request.url);
       return Response.error();
     }
   })());
