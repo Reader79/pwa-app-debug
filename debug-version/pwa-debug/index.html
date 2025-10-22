@@ -348,16 +348,13 @@
             <input type="month" id="reportMonth" name="reportMonth">
           </div>
           
-          <div class="field">
-            <label for="reportType">Тип отчета:</label>
-            <select id="reportType" name="reportType">
-              <option value="efficiency">Коэффициент выработки</option>
-              <option value="parts">Произведенные детали</option>
-              <option value="machines">Загрузка станков</option>
-              <option value="productivity">Производительность по дням</option>
-              <option value="overtime">Подработки и выходные</option>
-              <option value="quality">Анализ качества работы</option>
-            </select>
+          <div class="button-grid" style="display: grid; grid-template-columns: 1fr; gap: 10px; margin: 10px 0;">
+            <button type="button" class="secondary" id="efficiencyReport">Коэффициент выработки</button>
+            <button type="button" class="secondary" id="partsReport">Произведенные детали</button>
+            <button type="button" class="secondary" id="machinesReport">Загрузка станков</button>
+            <button type="button" class="secondary" id="productivityReport">Производительность по дням</button>
+            <button type="button" class="secondary" id="overtimeReport">Подработки и выходные</button>
+            <button type="button" class="secondary" id="qualityReport">Анализ качества работы</button>
           </div>
           
           <div id="reportContent" style="margin-top: 20px;">

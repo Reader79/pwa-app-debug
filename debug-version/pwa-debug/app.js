@@ -2213,14 +2213,39 @@ document.addEventListener('DOMContentLoaded', () => {
   closeReports?.addEventListener('click', () => reportsDialog.close());
   
   reportMonth?.addEventListener('change', (e) => {
-    const reportType = document.getElementById('reportType');
-    generateReport(e.target.value, reportType.value);
+    // При изменении месяца не генерируем отчет автоматически
+    // Пользователь должен выбрать тип отчета кнопкой
   });
   
-  const reportType = document.getElementById('reportType');
-  reportType?.addEventListener('change', (e) => {
+  // Обработчики кнопок отчетов
+  document.getElementById('efficiencyReport')?.addEventListener('click', () => {
     const reportMonth = document.getElementById('reportMonth');
-    generateReport(reportMonth.value, e.target.value);
+    generateReport(reportMonth.value, 'efficiency');
+  });
+  
+  document.getElementById('partsReport')?.addEventListener('click', () => {
+    const reportMonth = document.getElementById('reportMonth');
+    generateReport(reportMonth.value, 'parts');
+  });
+  
+  document.getElementById('machinesReport')?.addEventListener('click', () => {
+    const reportMonth = document.getElementById('reportMonth');
+    generateReport(reportMonth.value, 'machines');
+  });
+  
+  document.getElementById('productivityReport')?.addEventListener('click', () => {
+    const reportMonth = document.getElementById('reportMonth');
+    generateReport(reportMonth.value, 'productivity');
+  });
+  
+  document.getElementById('overtimeReport')?.addEventListener('click', () => {
+    const reportMonth = document.getElementById('reportMonth');
+    generateReport(reportMonth.value, 'overtime');
+  });
+  
+  document.getElementById('qualityReport')?.addEventListener('click', () => {
+    const reportMonth = document.getElementById('reportMonth');
+    generateReport(reportMonth.value, 'quality');
   });
   
   confirmOvertime?.addEventListener('click', () => {
