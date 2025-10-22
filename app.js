@@ -2169,12 +2169,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Генерируем PDF
-      generateDayReportPDF(date, shiftType, dayRecords).then(() => {
-        console.log('PDF успешно сгенерирован и сохранен');
-      }).catch(error => {
-        console.error('Ошибка генерации PDF:', error);
-        alert('Ошибка при генерации PDF: ' + error.message);
-      });
+        generateDayReportPDF(date, shiftType, dayRecords, 'share').then(() => {
+          console.log('PDF успешно отправлен');
+        }).catch(error => {
+          console.error('Ошибка генерации PDF:', error);
+          alert('Ошибка при генерации PDF: ' + error.message);
+        });
       
     } catch (error) {
       console.error('Ошибка генерации отчета:', error);
@@ -2240,12 +2240,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Генерируем PDF
-      generateMonthReportPDF(month, groupedByPartOperation).then(() => {
-        console.log('PDF месячного отчета успешно сгенерирован');
-      }).catch(error => {
-        console.error('Ошибка генерации месячного PDF:', error);
-        alert('Ошибка при генерации месячного PDF: ' + error.message);
-      });
+        generateMonthReportPDF(month, groupedByPartOperation, 'share').then(() => {
+          console.log('PDF месячного отчета успешно отправлен');
+        }).catch(error => {
+          console.error('Ошибка генерации месячного PDF:', error);
+          alert('Ошибка при генерации месячного PDF: ' + error.message);
+        });
       
     } catch (error) {
       console.error('Ошибка генерации месячного отчета:', error);
@@ -2253,8 +2253,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Функция для отправки отчета через Web Share API или fallback на скачивание
+  async function shareReport(blob, fileName) {
+    try {
+      // Проверяем поддержку Web Share API
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        
+        // Проверяем, можно ли поделиться файлом
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Отчет',
+            text: 'Отчет по деталям',
+            files: [file]
+          });
+          console.log('Отчет отправлен через Web Share API');
+          return;
+        }
+      }
+      
+      // Fallback: скачиваем файл
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      console.log('Отчет скачан (Web Share API недоступен)');
+    } catch (error) {
+      console.error('Ошибка отправки отчета:', error);
+      
+      // Fallback на скачивание при ошибке
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  }
+
   // Функция генерации PDF отчета через pdfmake
-  function generateDayReportPDF(date, shiftType, records) {
+  function generateDayReportPDF(date, shiftType, records, mode = 'download') {
     console.log('Начинаем генерацию PDF через pdfmake...');
     
     // Проверяем доступность pdfmake
@@ -2304,11 +2349,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Генерируем PDF...');
     
-    // Генерируем и скачиваем PDF
+    // Генерируем PDF
     try {
-      pdfMake.createPdf(docDefinition).download(`Отчет_${formatDateForFilename(date)}.pdf`);
-      console.log('PDF сгенерирован успешно');
-      return Promise.resolve();
+      if (mode === 'share') {
+        // Генерируем PDF в виде Blob для отправки
+        return new Promise((resolve, reject) => {
+          pdfMake.createPdf(docDefinition).getBlob((blob) => {
+            const fileName = `Отчет_${formatDateForFilename(date)}.pdf`;
+            shareReport(blob, fileName).then(() => {
+              console.log('PDF отправлен успешно');
+              resolve();
+            }).catch(reject);
+          });
+        });
+      } else {
+        // Скачиваем PDF как обычно
+        pdfMake.createPdf(docDefinition).download(`Отчет_${formatDateForFilename(date)}.pdf`);
+        console.log('PDF сгенерирован успешно');
+        return Promise.resolve();
+      }
     } catch (error) {
       console.error('Ошибка генерации PDF:', error);
       throw error;
@@ -2496,7 +2555,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Функция генерации PDF месячного отчета
-  function generateMonthReportPDF(month, groupedData) {
+  function generateMonthReportPDF(month, groupedData, mode = 'download') {
     console.log('Начинаем генерацию месячного PDF через pdfmake...');
     
     // Проверяем доступность pdfmake
@@ -2675,11 +2734,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Генерируем месячный PDF...');
     
-    // Генерируем и скачиваем PDF
+    // Генерируем PDF
     try {
-      pdfMake.createPdf(docDefinition).download(`Отчет_${month}.pdf`);
-      console.log('Месячный PDF сгенерирован успешно');
-      return Promise.resolve();
+      if (mode === 'share') {
+        // Генерируем PDF в виде Blob для отправки
+        return new Promise((resolve, reject) => {
+          pdfMake.createPdf(docDefinition).getBlob((blob) => {
+            const fileName = `Отчет_${month}.pdf`;
+            shareReport(blob, fileName).then(() => {
+              console.log('Месячный PDF отправлен успешно');
+              resolve();
+            }).catch(reject);
+          });
+        });
+      } else {
+        // Скачиваем PDF как обычно
+        pdfMake.createPdf(docDefinition).download(`Отчет_${month}.pdf`);
+        console.log('Месячный PDF сгенерирован успешно');
+        return Promise.resolve();
+      }
     } catch (error) {
       console.error('Ошибка генерации месячного PDF:', error);
       throw error;
