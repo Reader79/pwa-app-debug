@@ -2169,12 +2169,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Генерируем PDF
-        generateDayReportPDF(date, shiftType, dayRecords, 'share').then(() => {
-          console.log('PDF успешно отправлен');
-        }).catch(error => {
-          console.error('Ошибка генерации PDF:', error);
-          alert('Ошибка при генерации PDF: ' + error.message);
-        });
+        // Показываем диалог выбора: сохранить или отправить
+        showSaveOrSendDialog(date, shiftType, dayRecords);
       
     } catch (error) {
       console.error('Ошибка генерации отчета:', error);
@@ -2240,12 +2236,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Генерируем PDF
-        generateMonthReportPDF(month, groupedByPartOperation, 'share').then(() => {
-          console.log('PDF месячного отчета успешно отправлен');
-        }).catch(error => {
-          console.error('Ошибка генерации месячного PDF:', error);
-          alert('Ошибка при генерации месячного PDF: ' + error.message);
-        });
+        // Показываем диалог выбора: сохранить или отправить
+        showSaveOrSendMonthDialog(month, groupedByPartOperation);
       
     } catch (error) {
       console.error('Ошибка генерации месячного отчета:', error);
@@ -2759,8 +2751,148 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Функция показа диалога сохранения/отправки
-  function showSaveOrSendDialog(pdf, filename) {
+  // Функция показа диалога сохранения/отправки для дневного отчета
+  function showSaveOrSendDialog(date, shiftType, dayRecords) {
+    const dialog = document.createElement('div');
+    dialog.className = 'settings-dialog';
+    dialog.style.position = 'fixed';
+    dialog.style.top = '0';
+    dialog.style.left = '0';
+    dialog.style.width = '100%';
+    dialog.style.height = '100%';
+    dialog.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    dialog.style.display = 'flex';
+    dialog.style.alignItems = 'center';
+    dialog.style.justifyContent = 'center';
+    dialog.style.zIndex = '1000';
+
+    const content = document.createElement('div');
+    content.className = 'settings-content';
+    content.style.backgroundColor = '#1f2937';
+    content.style.borderRadius = '8px';
+    content.style.padding = '20px';
+    content.style.maxWidth = '400px';
+    content.style.width = '90%';
+
+    content.innerHTML = `
+      <div class="settings-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #e5e7eb;">Отправить отчет</h2>
+        <button id="closeDialog" style="background: none; border: none; color: #e5e7eb; cursor: pointer; font-size: 24px;">&times;</button>
+      </div>
+      <div class="settings-body">
+        <p style="color: #e5e7eb; margin-bottom: 20px;">Выберите действие с отчетом:</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button id="saveReport" class="secondary" style="flex: 1;">Сохранить</button>
+          <button id="sendReport" class="primary" style="flex: 1;">Отправить</button>
+        </div>
+      </div>
+    `;
+
+    dialog.appendChild(content);
+    document.body.appendChild(dialog);
+
+    const closeDialog = () => {
+      document.body.removeChild(dialog);
+    };
+
+    document.getElementById('closeDialog').addEventListener('click', closeDialog);
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeDialog();
+    });
+
+    document.getElementById('saveReport').addEventListener('click', () => {
+      closeDialog();
+      generateDayReportPDF(date, shiftType, dayRecords, 'download').then(() => {
+        console.log('PDF успешно сохранен');
+      }).catch(error => {
+        console.error('Ошибка генерации PDF:', error);
+        alert('Ошибка при генерации PDF: ' + error.message);
+      });
+    });
+
+    document.getElementById('sendReport').addEventListener('click', () => {
+      closeDialog();
+      generateDayReportPDF(date, shiftType, dayRecords, 'share').then(() => {
+        console.log('PDF успешно отправлен');
+      }).catch(error => {
+        console.error('Ошибка генерации PDF:', error);
+        alert('Ошибка при генерации PDF: ' + error.message);
+      });
+    });
+  }
+
+  // Функция показа диалога сохранения/отправки для месячного отчета
+  function showSaveOrSendMonthDialog(month, groupedData) {
+    const dialog = document.createElement('div');
+    dialog.className = 'settings-dialog';
+    dialog.style.position = 'fixed';
+    dialog.style.top = '0';
+    dialog.style.left = '0';
+    dialog.style.width = '100%';
+    dialog.style.height = '100%';
+    dialog.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    dialog.style.display = 'flex';
+    dialog.style.alignItems = 'center';
+    dialog.style.justifyContent = 'center';
+    dialog.style.zIndex = '1000';
+
+    const content = document.createElement('div');
+    content.className = 'settings-content';
+    content.style.backgroundColor = '#1f2937';
+    content.style.borderRadius = '8px';
+    content.style.padding = '20px';
+    content.style.maxWidth = '400px';
+    content.style.width = '90%';
+
+    content.innerHTML = `
+      <div class="settings-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #e5e7eb;">Отправить отчет</h2>
+        <button id="closeDialog" style="background: none; border: none; color: #e5e7eb; cursor: pointer; font-size: 24px;">&times;</button>
+      </div>
+      <div class="settings-body">
+        <p style="color: #e5e7eb; margin-bottom: 20px;">Выберите действие с отчетом:</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button id="saveReport" class="secondary" style="flex: 1;">Сохранить</button>
+          <button id="sendReport" class="primary" style="flex: 1;">Отправить</button>
+        </div>
+      </div>
+    `;
+
+    dialog.appendChild(content);
+    document.body.appendChild(dialog);
+
+    const closeDialog = () => {
+      document.body.removeChild(dialog);
+    };
+
+    document.getElementById('closeDialog').addEventListener('click', closeDialog);
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeDialog();
+    });
+
+    document.getElementById('saveReport').addEventListener('click', () => {
+      closeDialog();
+      generateMonthReportPDF(month, groupedData, 'download').then(() => {
+        console.log('PDF месячного отчета успешно сохранен');
+      }).catch(error => {
+        console.error('Ошибка генерации месячного PDF:', error);
+        alert('Ошибка при генерации месячного PDF: ' + error.message);
+      });
+    });
+
+    document.getElementById('sendReport').addEventListener('click', () => {
+      closeDialog();
+      generateMonthReportPDF(month, groupedData, 'share').then(() => {
+        console.log('PDF месячного отчета успешно отправлен');
+      }).catch(error => {
+        console.error('Ошибка генерации месячного PDF:', error);
+        alert('Ошибка при генерации месячного PDF: ' + error.message);
+      });
+    });
+  }
+
+  // Функция показа диалога сохранения/отправки (старая версия для совместимости)
+  function showSaveOrSendDialogOld(pdf, filename) {
     const saveOrSendDialog = document.createElement('div');
     saveOrSendDialog.className = 'save-send-dialog';
     saveOrSendDialog.innerHTML = `
