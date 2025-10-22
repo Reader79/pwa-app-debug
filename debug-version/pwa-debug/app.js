@@ -1975,8 +1975,37 @@ document.addEventListener('DOMContentLoaded', () => {
     openReportsDialog();
   });
   actionThree?.addEventListener('click', () => {
-    console.log('Действие 3: заглушка');
+    console.log('Отправка отчета: открываем диалог');
+    sendReportDialog.showModal();
   });
+
+  // Обработчики для диалога отправки отчетов
+  const sendReportDialog = document.getElementById('sendReportDialog');
+  const closeSendReport = document.getElementById('closeSendReport');
+  const cancelSendReport = document.getElementById('cancelSendReport');
+
+  // Обработчики выбора типа отчета
+  document.getElementById('selectDayReport')?.addEventListener('click', () => {
+    sendReportDialog.close();
+    // TODO: Открыть диалог выбора даты для дневного отчета
+    alert('Выберите дату для дневного отчета');
+  });
+
+  document.getElementById('selectMonthReport')?.addEventListener('click', () => {
+    sendReportDialog.close();
+    // TODO: Открыть диалог выбора месяца для месячного отчета
+    alert('Выберите месяц для месячного отчета');
+  });
+
+  document.getElementById('selectPeriodReport')?.addEventListener('click', () => {
+    sendReportDialog.close();
+    // TODO: Открыть диалог выбора периода для периодного отчета
+    alert('Выберите период для периодного отчета');
+  });
+
+  // Обработчики закрытия диалога
+  closeSendReport?.addEventListener('click', () => sendReportDialog.close());
+  cancelSendReport?.addEventListener('click', () => sendReportDialog.close());
 
   // Функции экспорта/импорта данных
   function exportAppData() {

@@ -394,6 +394,33 @@
       </div>
     </dialog>
 
+    <!-- Диалог отправки отчета -->
+    <dialog id="sendReportDialog" class="settings-dialog" aria-labelledby="sendReportTitle">
+      <div class="settings-content">
+        <div class="settings-header">
+          <h2 id="sendReportTitle">Отправить отчет</h2>
+          <button class="icon-button" id="closeSendReport" aria-label="Закрыть">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="settings-body">
+          <div class="button-grid" style="display: grid; grid-template-columns: 1fr; gap: 15px; margin: 20px 0;">
+            <button type="button" class="secondary" id="selectDayReport">Отчет за определенное число</button>
+            <button type="button" class="secondary" id="selectMonthReport">Отчет за выбранный месяц</button>
+            <button type="button" class="secondary" id="selectPeriodReport">Отчет за выбранный период</button>
+          </div>
+          
+          <!-- Кнопка отмены -->
+          <div class="row" style="margin-top: 20px; justify-content: center;">
+            <button type="button" class="secondary" id="cancelSendReport">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
     <script src="./app.js" defer></script>
   </body>
   </html>
