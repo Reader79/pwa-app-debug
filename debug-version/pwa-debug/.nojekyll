@@ -1,0 +1,2 @@
+# Force GitHub Pages to bypass Jekyll processing
+# This ensures static files are served directly without processing
