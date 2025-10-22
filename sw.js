@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v61';
+const CACHE_VERSION = 'v62';
 const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 const PRECACHE = `precache-${CACHE_VERSION}`;
 
@@ -28,19 +28,11 @@ self.addEventListener('activate', (event) => {
       }));
       await self.clients.claim();
       
-      // Принудительно обновляем все клиенты
+      // Уведомляем клиентов об обновлении
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
         client.postMessage({ type: 'SW_UPDATED' });
       });
-      
-      // Дополнительная проверка через 1 секунду
-      setTimeout(async () => {
-        const clients = await self.clients.matchAll();
-        clients.forEach(client => {
-          client.postMessage({ type: 'FORCE_RELOAD' });
-        });
-      }, 1000);
     })()
   );
 });
@@ -66,26 +58,6 @@ self.addEventListener('message', (event) => {
     );
   }
   
-  if (msg.type === 'FORCE_UPDATE') {
-    console.log('SW: Принудительное обновление всех ресурсов');
-    event.waitUntil(
-      (async () => {
-        // Очищаем все кэши
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-        
-        // Создаем новый кэш с обновленными ресурсами
-        const newCache = await caches.open(PRECACHE);
-        await newCache.addAll(ASSETS);
-        
-        // Уведомляем всех клиентов об обновлении
-        const clients = await self.clients.matchAll();
-        clients.forEach(client => {
-          client.postMessage({ type: 'CACHE_UPDATED' });
-        });
-      })()
-    );
-  }
 });
 
 // Стратегии кэширования
